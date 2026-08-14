@@ -1,0 +1,68 @@
+<div class="p-6 space-y-6">
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Purchase Orders</h1>
+            <p class="text-sm text-gray-500 mt-1">Create and track purchase orders placed with suppliers.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <app-button variant="secondary" [icon]="icons.download">Export</app-button>
+            <app-button [icon]="icons.plus" (clicked)="createPO()">Create Purchase Order</app-button>
+        </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        @for (card of stats; track card.title) {
+            <app-stat-card [title]="card.title" [value]="card.value" [icon]="card.icon" [iconBg]="card.iconBg" [iconColor]="card.iconColor" [note]="card.note"></app-stat-card>
+        }
+    </div>
+
+    <!-- Purchase orders table -->
+    <app-data-table
+        [data]="purchaseOrders()"
+        [columns]="columns"
+        [searchKeys]="['poNumber', 'supplier']"
+        title="Purchase Order List"
+        [description]="purchaseOrders().length + ' purchase orders'"
+        searchPlaceholder="Search purchase orders..."
+        [filterable]="true"
+        [filterOptions]="filterOptions"
+        [filterFn]="filterByStatus"
+        [pageSize]="10"
+        [actions]="true"
+        (view)="viewPO($event)"
+        (edit)="editPO($event)"
+        (delete)="deletePO($event)">
+        <ng-template tableCell="supplier" let-row>
+            <span class="font-medium text-gray-800">{{ row.supplier }}</span>
+        </ng-template>
+        <ng-template tableCell="items" let-row>
+            <span class="text-gray-700">{{ row.items }} items</span>
+        </ng-template>
+    </app-data-table>
+</div>
+
+<!-- ==================== DELETE CONFIRM MODAL ==================== -->
+<app-modal
+    [open]="deleteTarget !== null"
+    title="Delete Purchase Order"
+    [subtitle]="deleteTarget?.poNumber"
+    [icon]="icons.trash"
+    iconBg="bg-red-100"
+    iconColor="text-red-600"
+    (closed)="closeDelete()">
+    @if (deleteTarget) {
+        <p class="text-sm text-gray-600 leading-relaxed">
+            Are you sure you want to delete purchase order
+            <span class="font-semibold text-gray-800">{{ deleteTarget.poNumber }}</span> from
+            <span class="font-semibold text-gray-800">{{ deleteTarget.supplier }}</span>? This action cannot be undone.
+        </p>
+    }
+
+    <div class="flex items-center justify-end gap-3" modalFooter>
+        <app-button variant="secondary" (clicked)="closeDelete()">Cancel</app-button>
+        <app-button variant="danger" [icon]="icons.trash" (clicked)="confirmDelete()">Delete Purchase Order</app-button>
+    </div>
+</app-modal>

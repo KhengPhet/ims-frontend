@@ -1,0 +1,238 @@
+<div class="p-6 space-y-6">
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Settings</h1>
+            <p class="text-sm text-gray-500 mt-1">Manage your account, company profile and preferences.</p>
+        </div>
+        <app-badge label="Enterprise Plan" variant="blue"></app-badge>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+
+        <!-- Profile settings -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                <span class="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                    <lucide-icon [img]="sections[0].icon" size="18"></lucide-icon>
+                </span>
+                <div>
+                    <h2 class="text-base font-semibold text-gray-800">{{ sections[0].title }}</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">{{ sections[0].description }}</p>
+                </div>
+            </div>
+            <form [formGroup]="profileForm" class="px-6 py-5 space-y-5" (ngSubmit)="saveProfile()">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1.5">Full Name *</label>
+                    <input formControlName="fullName" type="text"
+                        class="w-full h-11 px-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        [class]="profileInvalid('fullName') ? 'border-red-300' : 'border-gray-200'">
+                    @if (profileInvalid('fullName')) {
+                        <p class="mt-1.5 text-xs text-red-500">Full name is required (min 2 characters)</p>
+                    }
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1.5">Email *</label>
+                    <input formControlName="email" type="email"
+                        class="w-full h-11 px-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        [class]="profileInvalid('email') ? 'border-red-300' : 'border-gray-200'">
+                    @if (profileInvalid('email')) {
+                        <p class="mt-1.5 text-xs text-red-500">Enter a valid email address</p>
+                    }
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Role</label>
+                        <input formControlName="role" type="text" [readonly]="true"
+                            class="w-full h-11 px-3.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Phone</label>
+                        <input formControlName="phone" type="text"
+                            class="w-full h-11 px-3.5 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <app-button type="submit" [icon]="icons.check" [disabled]="profileForm.invalid">Save Profile</app-button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Company information -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                <span class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                    <lucide-icon [img]="sections[1].icon" size="18"></lucide-icon>
+                </span>
+                <div>
+                    <h2 class="text-base font-semibold text-gray-800">{{ sections[1].title }}</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">{{ sections[1].description }}</p>
+                </div>
+            </div>
+            <form [formGroup]="companyForm" class="px-6 py-5 space-y-5" (ngSubmit)="saveCompany()">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Company Name *</label>
+                        <input formControlName="companyName" type="text"
+                            class="w-full h-11 px-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            [class]="companyInvalid('companyName') ? 'border-red-300' : 'border-gray-200'">
+                        @if (companyInvalid('companyName')) {
+                            <p class="mt-1.5 text-xs text-red-500">Company name is required</p>
+                        }
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Tax ID / VAT</label>
+                        <input formControlName="taxId" type="text"
+                            class="w-full h-11 px-3.5 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Billing Email *</label>
+                        <input formControlName="email" type="email"
+                            class="w-full h-11 px-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            [class]="companyInvalid('email') ? 'border-red-300' : 'border-gray-200'">
+                        @if (companyInvalid('email')) {
+                            <p class="mt-1.5 text-xs text-red-500">Enter a valid email address</p>
+                        }
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Phone</label>
+                        <input formControlName="phone" type="text"
+                            class="w-full h-11 px-3.5 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1.5">Address</label>
+                    <textarea formControlName="address" rows="2"
+                        class="w-full px-3.5 py-3 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <app-button type="submit" [icon]="icons.check" [disabled]="companyForm.invalid">Save Company</app-button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Notification settings -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                <span class="w-9 h-9 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0">
+                    <lucide-icon [img]="sections[2].icon" size="18"></lucide-icon>
+                </span>
+                <div>
+                    <h2 class="text-base font-semibold text-gray-800">{{ sections[2].title }}</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">{{ sections[2].description }}</p>
+                </div>
+            </div>
+            <div class="px-6 py-5">
+                @for (item of toggles; track item.key) {
+                    <div class="flex items-center justify-between py-3.5" [class]="!$last ? 'border-b border-gray-100' : ''">
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">{{ item.label }}</p>
+                            <p class="text-xs text-gray-400 mt-0.5">{{ item.description }}</p>
+                        </div>
+                        <button type="button" role="switch" (click)="toggle(item.key)"
+                            [attr.aria-checked]="notificationsForm.controls[item.key].value"
+                            class="relative w-12 h-6 rounded-full transition-colors duration-200 flex-shrink-0"
+                            [class]="notificationsForm.controls[item.key].value ? 'bg-blue-600' : 'bg-gray-200'">
+                            <span class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200"
+                                [class]="notificationsForm.controls[item.key].value ? 'translate-x-6' : ''"></span>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="space-y-6">
+
+            <!-- Security -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                    <span class="w-9 h-9 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center flex-shrink-0">
+                        <lucide-icon [img]="sections[3].icon" size="18"></lucide-icon>
+                    </span>
+                    <div>
+                        <h2 class="text-base font-semibold text-gray-800">{{ sections[3].title }}</h2>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ sections[3].description }}</p>
+                    </div>
+                </div>
+                <div class="px-6 py-5 space-y-4">
+                    <div class="flex items-center justify-between gap-4 py-2">
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">Two-Factor Authentication</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Add an extra layer of security to your account</p>
+                        </div>
+                        <span class="px-2.5 py-1 text-[11px] font-semibold bg-emerald-100 text-emerald-700 rounded-full">Enabled</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-4 py-2 border-t border-gray-100">
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">Active Sessions</p>
+                            <p class="text-xs text-gray-400 mt-0.5">2 devices currently connected</p>
+                        </div>
+                        <app-button variant="secondary" size="sm">Manage</app-button>
+                    </div>
+                    <div class="flex items-center justify-between gap-4 py-2 border-t border-gray-100">
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">Change Password</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Last changed 3 months ago</p>
+                        </div>
+                        <app-button variant="secondary" size="sm">Update</app-button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System preferences -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                    <span class="w-9 h-9 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center flex-shrink-0">
+                        <lucide-icon [img]="sections[4].icon" size="18"></lucide-icon>
+                    </span>
+                    <div>
+                        <h2 class="text-base font-semibold text-gray-800">{{ sections[4].title }}</h2>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ sections[4].description }}</p>
+                    </div>
+                </div>
+                <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Language</label>
+                        <select class="w-full h-11 px-3 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            <option>English (US)</option>
+                            <option>English (UK)</option>
+                            <option>Español</option>
+                            <option>Français</option>
+                            <option>Deutsch</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Timezone</label>
+                        <select class="w-full h-11 px-3 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            <option>(UTC-08:00) Pacific Time</option>
+                            <option>(UTC-05:00) Eastern Time</option>
+                            <option>(UTC+00:00) London</option>
+                            <option>(UTC+01:00) Central Europe</option>
+                            <option>(UTC+08:00) Singapore</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Currency</label>
+                        <select class="w-full h-11 px-3 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            <option>USD — $</option>
+                            <option>EUR — €</option>
+                            <option>GBP — £</option>
+                            <option>SGD — S$</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Date Format</label>
+                        <select class="w-full h-11 px-3 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            <option>MM/DD/YYYY</option>
+                            <option>DD/MM/YYYY</option>
+                            <option>YYYY-MM-DD</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

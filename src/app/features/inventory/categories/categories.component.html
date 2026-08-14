@@ -1,0 +1,95 @@
+<div class="p-6 space-y-6">
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Categories</h1>
+            <p class="text-sm text-gray-500 mt-1">Organize your products into categories for easier management.</p>
+        </div>
+        <app-button [icon]="icons.plus" (clicked)="openModal()">Add Category</app-button>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        @for (card of stats; track card.title) {
+            <app-stat-card [title]="card.title" [value]="card.value" [icon]="card.icon" [iconBg]="card.iconBg" [iconColor]="card.iconColor" [note]="card.note"></app-stat-card>
+        }
+    </div>
+
+    <!-- Category grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+        @for (cat of categories; track cat.id) {
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow group">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center {{ metaFor(cat.name).iconBg }}">
+                            <lucide-icon [img]="metaFor(cat.name).icon" size="24" class="{{ metaFor(cat.name).iconColor }}"></lucide-icon>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">{{ cat.name }}</h3>
+                            <p class="text-xs text-gray-400">{{ cat.products }} products</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button (click)="openEditModal(cat)" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" aria-label="Edit category">
+                            <lucide-icon [img]="icons.edit" size="15"></lucide-icon>
+                        </button>
+                        <button (click)="deleteCategory(cat)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" aria-label="Delete category">
+                            <lucide-icon [img]="icons.trash" size="15"></lucide-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-500 mt-4 line-clamp-2">{{ cat.description }}</p>
+
+                <div class="flex items-center justify-between text-sm mt-5 mb-2">
+                    <span class="text-xs text-gray-400">{{ cat.totalUnits.toLocaleString() }} units in stock</span>
+                    <span class="text-xs font-semibold text-gray-600">{{ cat.percent }}%</span>
+                </div>
+                <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full {{ metaFor(cat.name).bar }}" [style.width]="cat.percent + '%'"></div>
+                </div>
+
+                <div class="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
+                    <span class="text-sm font-semibold text-gray-800">{{ currency(cat.stockValue) }}</span>
+                    @if (cat.active) {
+                        <app-badge label="Active" variant="green"></app-badge>
+                    } @else {
+                        <app-badge label="Inactive" variant="gray"></app-badge>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Add category modal -->
+<app-modal [open]="modalOpen" [title]="modalTitle" [subtitle]="modalSubtitle" [icon]="icons.tag" (closed)="closeModal()">
+    <form [formGroup]="form" (ngSubmit)="saveCategory()" novalidate class="space-y-5">
+        <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5">Category Name *</label>
+            <input
+                formControlName="name"
+                type="text"
+                placeholder="e.g. Electronics"
+                class="w-full h-11 px-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                [class]="isInvalid('name') ? 'border-red-300 ring-2 ring-red-100' : 'border-gray-200'">
+            @if (isInvalid('name')) {
+                <p class="mt-1.5 text-xs text-red-500">Category name is required (min 2 characters)</p>
+            }
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5">Description</label>
+            <textarea
+                formControlName="description"
+                rows="3"
+                placeholder="Short description of this category..."
+                class="w-full px-3.5 py-3 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-3" modalFooter>
+            <app-button variant="secondary" (clicked)="closeModal()">Cancel</app-button>
+            <app-button type="submit" [icon]="icons.check" [disabled]="form.invalid">{{ submitLabel }}</app-button>
+        </div>
+    </form>
+</app-modal>

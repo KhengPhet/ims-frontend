@@ -1,0 +1,70 @@
+<div class="p-6 space-y-6">
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Orders</h1>
+            <p class="text-sm text-gray-500 mt-1">Track customer orders, payments and fulfilment status.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <app-button variant="secondary" [icon]="icons.download">Export</app-button>
+            <app-button [icon]="icons.plus" (clicked)="addOrder()">New Order</app-button>
+        </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        @for (card of stats; track card.title) {
+            <app-stat-card [title]="card.title" [value]="card.value" [icon]="card.icon" [iconBg]="card.iconBg" [iconColor]="card.iconColor" [note]="card.note"></app-stat-card>
+        }
+    </div>
+
+    <!-- Orders table -->
+    <app-data-table
+        [data]="orders()"
+        [columns]="columns"
+        [searchKeys]="['orderNumber', 'customer', 'email']"
+        title="All Orders"
+        [description]="orders().length + ' recent orders'"
+        searchPlaceholder="Search orders..."
+        [filterable]="true"
+        [filterOptions]="filterOptions"
+        [filterFn]="filterByStatus"
+        [pageSize]="10"
+        [actions]="true"
+        (edit)="editOrder($event)"
+        (delete)="deleteOrder($event)">
+        <ng-template tableCell="customer" let-row>
+            <div class="min-w-0">
+                <p class="font-medium text-gray-800 truncate">{{ row.customer }}</p>
+                <p class="text-xs text-gray-400 truncate">{{ row.email }}</p>
+            </div>
+        </ng-template>
+        <ng-template tableCell="items" let-row>
+            <span class="text-gray-700">{{ row.items }} items</span>
+        </ng-template>
+    </app-data-table>
+</div>
+
+<!-- ==================== DELETE CONFIRM MODAL ==================== -->
+<app-modal
+    [open]="deleteTarget !== null"
+    title="Delete Order"
+    [subtitle]="deleteTarget?.orderNumber"
+    [icon]="icons.trash"
+    iconBg="bg-red-100"
+    iconColor="text-red-600"
+    (closed)="closeDelete()">
+    @if (deleteTarget) {
+        <p class="text-sm text-gray-600 leading-relaxed">
+            Are you sure you want to delete order
+            <span class="font-semibold text-gray-800">{{ deleteTarget.orderNumber }}</span> for
+            <span class="font-semibold text-gray-800">{{ deleteTarget.customer }}</span>? This action cannot be undone.
+        </p>
+    }
+
+    <div class="flex items-center justify-end gap-3" modalFooter>
+        <app-button variant="secondary" (clicked)="closeDelete()">Cancel</app-button>
+        <app-button variant="danger" [icon]="icons.trash" (clicked)="confirmDelete()">Delete Order</app-button>
+    </div>
+</app-modal>

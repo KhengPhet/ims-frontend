@@ -1,0 +1,258 @@
+<div class="p-6 space-y-6">
+
+    <!-- ==================== PAGE HEADER ==================== -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+        <div>
+            <nav class="flex items-center gap-1.5 text-sm mb-2">
+                <a routerLink="/purchase/orders" class="font-medium text-gray-500 hover:text-blue-600 transition">Purchase Orders</a>
+                <lucide-icon [img]="icons.chevronRight" size="14" class="text-gray-300"></lucide-icon>
+                <span class="font-semibold text-gray-700">Edit Purchase Order</span>
+            </nav>
+            <h1 class="text-2xl font-bold text-gray-800">Edit Purchase Order</h1>
+            <p class="text-sm text-gray-500 mt-1">Update purchase order details and fulfilment status.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <app-button [variant]="'ghost'" [icon]="icons.refresh" (clicked)="resetForm()">Reset</app-button>
+            <app-button [variant]="'secondary'" [icon]="icons.x" (clicked)="onCancel()">Cancel</app-button>
+            <app-button [icon]="icons.save" [loading]="isSaving" loadingText="Updating Purchase Order..." [disabled]="form.invalid" (clicked)="onSubmit()">Update Purchase Order</app-button>
+        </div>
+    </div>
+
+    <!-- ==================== FORM ==================== -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+
+            <!-- ==================== LEFT COLUMN ==================== -->
+            <div class="xl:col-span-2 space-y-6">
+
+                <!-- Order Details -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                        <span class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                            <lucide-icon [img]="icons.list" size="18"></lucide-icon>
+                        </span>
+                        <div>
+                            <h2 class="text-base font-semibold text-gray-800">Order Details</h2>
+                            <p class="text-xs text-gray-400 mt-0.5">Reference, supplier and dates</p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                            <!-- PO Number -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">PO Number</label>
+                                <div class="relative">
+                                    <input
+                                        formControlName="poNumber"
+                                        type="text"
+                                        placeholder="PO-2026-0000"
+                                        class="w-full h-11 pr-20 px-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('poNumber')">
+                                    <button
+                                        type="button"
+                                        (click)="generateReference()"
+                                        title="Generate PO number"
+                                        class="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1 h-8 px-2.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition">
+                                        <lucide-icon [img]="icons.refresh" size="13"></lucide-icon>
+                                        Generate
+                                    </button>
+                                </div>
+                                @if(errorFor('poNumber')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('poNumber')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Supplier -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Supplier *</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.supplier" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <select
+                                        formControlName="supplier"
+                                        class="w-full h-11 pl-10 pr-9 text-sm bg-white border rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('supplier')">
+                                        <option value="" disabled>Select supplier</option>
+                                        @for(supplier of suppliers; track supplier){
+                                            <option [value]="supplier">{{supplier}}</option>
+                                        }
+                                    </select>
+                                    <lucide-icon [img]="icons.chevronDown" size="16" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                </div>
+                                @if(errorFor('supplier')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('supplier')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Order Date -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Order Date *</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.calendar" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="orderDate"
+                                        type="date"
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('orderDate')">
+                                </div>
+                                @if(errorFor('orderDate')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('orderDate')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Expected Date -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Expected Date *</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.calendar" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="expectedDate"
+                                        type="date"
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('expectedDate')">
+                                </div>
+                                @if(errorFor('expectedDate')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('expectedDate')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Items -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Items</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.items" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="items"
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        placeholder="0"
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('items')">
+                                </div>
+                                @if(errorFor('items')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('items')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Total -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Total</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.dollar" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="total"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="0.00"
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('total')">
+                                </div>
+                                @if(errorFor('total')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('total')}}
+                                    </p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== RIGHT COLUMN ==================== -->
+            <div class="space-y-6">
+
+                <!-- Status -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                        <span class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                            <lucide-icon [img]="icons.status" size="18"></lucide-icon>
+                        </span>
+                        <div>
+                            <h2 class="text-base font-semibold text-gray-800">Status</h2>
+                            <p class="text-xs text-gray-400 mt-0.5">Fulfilment state</p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-5">
+                        <label class="block text-xs font-medium text-gray-500 mb-1.5">Status</label>
+                        <div class="relative">
+                            <select
+                                formControlName="status"
+                                class="w-full h-11 px-3.5 pr-9 text-sm bg-white border border-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                @for(status of statuses; track status){
+                                    <option [value]="status">{{status}}</option>
+                                }
+                            </select>
+                            <lucide-icon [img]="icons.chevronDown" size="16" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-sm font-semibold text-gray-800 mb-4">Summary</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Supplier</span>
+                            <span class="font-medium text-gray-700 truncate max-w-[55%]">{{form.controls.supplier.value || "—"}}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Items</span>
+                            <span class="font-medium text-gray-700">{{form.controls.items.value || 0}}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Status</span>
+                            <span class="font-medium text-gray-700">{{form.controls.status.value}}</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <span class="text-sm font-semibold text-gray-700">Total</span>
+                            <span class="text-lg font-bold text-emerald-600">{{currency(form.controls.total.value)}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== BOTTOM ACTION BAR ==================== -->
+        <div class="sticky bottom-4 z-20 mt-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-xl shadow-lg shadow-gray-200/60 border border-gray-200 px-6 py-4">
+                <div class="flex items-center gap-4">
+                    <p class="text-xs text-gray-400">
+                        <span class="font-medium text-gray-500">Note:</span> fields marked with * are required
+                    </p>
+                    @if(form.invalid){
+                        <p class="hidden sm:flex items-center gap-1 text-xs font-medium text-red-500">
+                            <lucide-icon [img]="icons.alert" size="13"></lucide-icon>
+                            Please fix the highlighted fields
+                        </p>
+                    }
+                </div>
+                <div class="flex items-center gap-3">
+                    <app-button [variant]="'secondary'" [icon]="icons.x" (clicked)="onCancel()">Cancel</app-button>
+                    <app-button type="submit" [icon]="icons.save" [loading]="isSaving" loadingText="Updating Purchase Order..." [disabled]="form.invalid" (clicked)="onSubmit()">Update Purchase Order</app-button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

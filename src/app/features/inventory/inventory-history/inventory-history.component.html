@@ -1,0 +1,42 @@
+<div class="p-6 space-y-6">
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Inventory History</h1>
+            <p class="text-sm text-gray-500 mt-1">Complete audit trail of all stock movements.</p>
+        </div>
+        <app-button variant="secondary" [icon]="icons.download">Export Log</app-button>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        @for (card of stats; track card.title) {
+            <app-stat-card [title]="card.title" [value]="card.value" [icon]="card.icon" [iconBg]="card.iconBg" [iconColor]="card.iconColor" [note]="card.note"></app-stat-card>
+        }
+    </div>
+
+    <!-- Movements table -->
+    <app-data-table
+        [data]="movements()"
+        [columns]="columns"
+        [searchKeys]="['reference', 'product', 'sku', 'user']"
+        title="Movement Log"
+        [description]="movements().length + ' recent movements'"
+        searchPlaceholder="Search movements..."
+        [filterable]="true"
+        [filterOptions]="filterOptions"
+        [filterFn]="filterByType"
+        [pageSize]="8"
+        [actions]="true"
+        [showView]="false"
+        [showDelete]="false"
+        (edit)="editMovement($event)">
+        <ng-template tableCell="product" let-row>
+            <div class="min-w-0">
+                <p class="font-medium text-gray-800 truncate">{{ row.product }}</p>
+                <p class="text-xs text-gray-400">{{ row.sku }}</p>
+            </div>
+        </ng-template>
+    </app-data-table>
+</div>

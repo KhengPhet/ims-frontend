@@ -1,0 +1,345 @@
+<div class="p-6 space-y-6">
+
+    <!-- ==================== PAGE HEADER ==================== -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+        <div>
+            <nav class="flex items-center gap-1.5 text-sm mb-2">
+                <a routerLink="/inventory/stock-out" class="font-medium text-gray-500 hover:text-blue-600 transition">Stock Out</a>
+                <lucide-icon [img]="icons.chevronRight" size="14" class="text-gray-300"></lucide-icon>
+                <span class="font-semibold text-gray-700">Add Stock Out</span>
+            </nav>
+            <h1 class="text-2xl font-bold text-gray-800">Add Stock Out</h1>
+            <p class="text-sm text-gray-500 mt-1">Record an outgoing issue and dispatch stock from inventory.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <app-button [variant]="'ghost'" [icon]="icons.refresh" (clicked)="resetForm()">Reset</app-button>
+            <app-button [variant]="'secondary'" [icon]="icons.x" (clicked)="onCancel()">Cancel</app-button>
+            <app-button [icon]="icons.save" [loading]="isSaving" loadingText="Saving Stock Out..." [disabled]="form.invalid" (clicked)="onSubmit()">Save Stock Out</app-button>
+        </div>
+    </div>
+
+    <!-- ==================== FORM ==================== -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+
+            <!-- ==================== LEFT COLUMN ==================== -->
+            <div class="xl:col-span-2 space-y-6">
+
+                <!-- Stock Issue -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                        <span class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                            <lucide-icon [img]="icons.arrowUp" size="18"></lucide-icon>
+                        </span>
+                        <div>
+                            <h2 class="text-base font-semibold text-gray-800">Stock Issue</h2>
+                            <p class="text-xs text-gray-400 mt-0.5">Product and quantity being dispatched</p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                            <!-- Reference -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Reference</label>
+                                <div class="relative">
+                                    <input
+                                        formControlName="reference"
+                                        type="text"
+                                        placeholder="OUT-2026-0000"
+                                        class="w-full h-11 pr-20 px-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('reference')">
+                                    <button
+                                        type="button"
+                                        (click)="generateReference()"
+                                        title="Generate reference"
+                                        class="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1 h-8 px-2.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition">
+                                        <lucide-icon [img]="icons.refresh" size="13"></lucide-icon>
+                                        Generate
+                                    </button>
+                                </div>
+                                @if(errorFor('reference')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('reference')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Status -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Status</label>
+                                <div class="relative">
+                                    <select
+                                        formControlName="status"
+                                        class="w-full h-11 px-3.5 pr-9 text-sm bg-white border border-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                        @for(status of statuses; track status){
+                                            <option [value]="status">{{status}}</option>
+                                        }
+                                    </select>
+                                    <lucide-icon [img]="icons.chevronDown" size="16" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                </div>
+                            </div>
+
+                            <!-- Product -->
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Product *</label>
+                                <div class="relative">
+                                    <select
+                                        formControlName="product"
+                                        (change)="onProductChange()"
+                                        class="w-full h-11 px-3.5 pr-9 text-sm bg-white border rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('product')">
+                                        <option value="" disabled>Select product</option>
+                                        @for(product of products; track product.sku){
+                                            <option [value]="product.name">{{product.name}} ({{product.sku}})</option>
+                                        }
+                                    </select>
+                                    <lucide-icon [img]="icons.chevronDown" size="16" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                </div>
+                                @if(errorFor('product')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('product')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- SKU -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">SKU</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.package" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="sku"
+                                        type="text"
+                                        readonly
+                                        placeholder="Auto from product"
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-gray-50 text-gray-500 border border-gray-200 rounded-lg placeholder:text-gray-300 cursor-not-allowed focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Unit -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Unit</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.boxes" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="unit"
+                                        type="text"
+                                        readonly
+                                        placeholder="Auto"
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-gray-50 text-gray-500 border border-gray-200 rounded-lg placeholder:text-gray-300 cursor-not-allowed focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Quantity -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Quantity *</label>
+                                <input
+                                    formControlName="quantity"
+                                    type="number"
+                                    min="1"
+                                    step="1"
+                                    (input)="validateQuantity()"
+                                    placeholder="0"
+                                    class="w-full h-11 px-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                    [class]="inputClass('quantity')">
+                                @if(errorFor('quantity')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('quantity')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Available stock -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Available Stock</label>
+                                <div
+                                    class="w-full h-11 px-3.5 flex items-center gap-2 rounded-lg border"
+                                    [class]="availableStock === 0 ? 'bg-red-50 border-red-100' : 'bg-emerald-50 border-emerald-100'">
+                                    <lucide-icon [img]="icons.boxes" size="16" [class]="availableStock === 0 ? 'text-red-400' : 'text-emerald-500'"></lucide-icon>
+                                    <span class="text-sm font-bold" [class]="availableStock === 0 ? 'text-red-600' : 'text-emerald-700'">
+                                        {{ availableStock.toLocaleString() }} {{ form.controls.unit.value || "unit" }}
+                                    </span>
+                                </div>
+                                @if(quantityExceedsStock && availableStock > 0){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        Only {{availableStock.toLocaleString()}} available
+                                    </p>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Out of stock hint -->
+                        @if(selectedProduct && availableStock === 0){
+                            <div class="mt-5 flex items-start gap-2.5 p-3.5 rounded-lg bg-red-50 border border-red-100">
+                                <lucide-icon [img]="icons.alert" size="16" class="text-red-500 mt-0.5 flex-shrink-0"></lucide-icon>
+                                <p class="text-xs text-red-700 leading-relaxed">
+                                    This product is currently out of stock. You cannot issue stock until inventory is received.
+                                </p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== RIGHT COLUMN ==================== -->
+            <div class="space-y-6">
+
+                <!-- Dispatch Details -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                        <span class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                            <lucide-icon [img]="icons.cart" size="18"></lucide-icon>
+                        </span>
+                        <div>
+                            <h2 class="text-base font-semibold text-gray-800">Dispatch Details</h2>
+                            <p class="text-xs text-gray-400 mt-0.5">Where the stock is going</p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-5">
+                        <div class="grid grid-cols-1 gap-5">
+
+                            <!-- Destination -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Destination *</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.send" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <select
+                                        formControlName="destination"
+                                        class="w-full h-11 pl-10 pr-9 text-sm bg-white border rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('destination')">
+                                        <option value="" disabled>Select destination</option>
+                                        @for(destination of destinations; track destination){
+                                            <option [value]="destination">{{destination}}</option>
+                                        }
+                                    </select>
+                                    <lucide-icon [img]="icons.chevronDown" size="16" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                </div>
+                                @if(errorFor('destination')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('destination')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Warehouse -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Warehouse *</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.warehouse" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <select
+                                        formControlName="warehouse"
+                                        class="w-full h-11 pl-10 pr-9 text-sm bg-white border rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('warehouse')">
+                                        <option value="" disabled>Select warehouse</option>
+                                        @for(warehouse of warehouses; track warehouse){
+                                            <option [value]="warehouse">{{warehouse}}</option>
+                                        }
+                                    </select>
+                                    <lucide-icon [img]="icons.chevronDown" size="16" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                </div>
+                                @if(errorFor('warehouse')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('warehouse')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Issue Date -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Issue Date *</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.calendar" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="issuedDate"
+                                        type="date"
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('issuedDate')">
+                                </div>
+                                @if(errorFor('issuedDate')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('issuedDate')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Reason -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Reason / Notes</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.notes" size="16" class="absolute left-3 top-3 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <textarea
+                                        formControlName="reason"
+                                        rows="4"
+                                        placeholder="e.g. Sales order dispatch, transfer, damage..."
+                                        class="w-full pl-10 pr-3.5 py-3 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-sm font-semibold text-gray-800 mb-4">Summary</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Product</span>
+                            <span class="font-medium text-gray-700 truncate max-w-[55%]">{{form.controls.product.value || "—"}}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Destination</span>
+                            <span class="font-medium text-gray-700 truncate max-w-[55%]">{{form.controls.destination.value || "—"}}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Quantity</span>
+                            <span class="font-medium text-gray-700">{{form.controls.quantity.value || 0}} {{form.controls.unit.value || "unit"}}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Stock Remaining</span>
+                            <span class="font-bold" [class]="quantityExceedsStock ? 'text-red-600' : 'text-emerald-600'">
+                                {{ stockRemaining.toLocaleString() }} {{ form.controls.unit.value || "unit" }}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <span class="text-sm font-semibold text-gray-700">Issue Value</span>
+                            <span class="text-lg font-bold text-emerald-600">{{currency(issueValue)}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== BOTTOM ACTION BAR ==================== -->
+        <div class="sticky bottom-4 z-20 mt-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-xl shadow-lg shadow-gray-200/60 border border-gray-200 px-6 py-4">
+                <div class="flex items-center gap-4">
+                    <p class="text-xs text-gray-400">
+                        <span class="font-medium text-gray-500">Note:</span> fields marked with * are required
+                    </p>
+                    @if(form.invalid){
+                        <p class="hidden sm:flex items-center gap-1 text-xs font-medium text-red-500">
+                            <lucide-icon [img]="icons.alert" size="13"></lucide-icon>
+                            Please fix the highlighted fields
+                        </p>
+                    }
+                </div>
+                <div class="flex items-center gap-3">
+                    <app-button [variant]="'secondary'" [icon]="icons.x" (clicked)="onCancel()">Cancel</app-button>
+                    <app-button type="submit" [icon]="icons.save" [loading]="isSaving" loadingText="Saving Stock Out..." [disabled]="form.invalid" (clicked)="onSubmit()">Save Stock Out</app-button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

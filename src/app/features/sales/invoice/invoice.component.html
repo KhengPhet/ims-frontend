@@ -1,0 +1,39 @@
+<div class="p-6 space-y-6">
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Invoices</h1>
+            <p class="text-sm text-gray-500 mt-1">Generate, track and manage customer invoices.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <app-button variant="secondary" [icon]="icons.download">Export</app-button>
+            <app-button [icon]="icons.plus" (clicked)="newInvoice()">New Invoice</app-button>
+        </div>
+    </div>
+
+    <!-- Invoices table -->
+    <app-data-table
+        [data]="invoices"
+        [columns]="columns"
+        [searchKeys]="['invoiceNumber', 'customer']"
+        title="Invoice List"
+        [description]="invoices.length + ' invoices'"
+        searchPlaceholder="Search invoices..."
+        [filterable]="true"
+        [filterOptions]="filterOptions"
+        [filterFn]="filterByStatus"
+        [pageSize]="10"
+        [actions]="true"
+        [showEdit]="false"
+        [showDelete]="false">
+        <ng-template tableCell="invoiceNumber" let-row>
+            <div class="flex items-center gap-3">
+                <span class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                    <lucide-icon [img]="icons.printer" size="16"></lucide-icon>
+                </span>
+                <span class="font-medium text-gray-800">{{ row.invoiceNumber }}</span>
+            </div>
+        </ng-template>
+    </app-data-table>
+</div>

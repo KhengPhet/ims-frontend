@@ -1,0 +1,308 @@
+<div class="p-6 space-y-6">
+
+    <!-- ==================== PAGE HEADER ==================== -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+        <div>
+            <nav class="flex items-center gap-1.5 text-sm mb-2">
+                <a routerLink="/sales/customers" class="font-medium text-gray-500 hover:text-blue-600 transition">Customers</a>
+                <lucide-icon [img]="icons.chevronRight" size="14" class="text-gray-300"></lucide-icon>
+                <span class="font-semibold text-gray-700">Add Customer</span>
+            </nav>
+            <h1 class="text-2xl font-bold text-gray-800">Add Customer</h1>
+            <p class="text-sm text-gray-500 mt-1">Create a new customer with contact and address details.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <app-button [variant]="'ghost'" [icon]="icons.refresh" (clicked)="resetForm()">Reset</app-button>
+            <app-button [variant]="'secondary'" [icon]="icons.x" (clicked)="onCancel()">Cancel</app-button>
+            <app-button [icon]="icons.save" [loading]="isSaving" loadingText="Saving Customer..." [disabled]="form.invalid" (clicked)="onSubmit()">Save Customer</app-button>
+        </div>
+    </div>
+
+    <!-- ==================== FORM ==================== -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+
+            <!-- ==================== LEFT COLUMN ==================== -->
+            <div class="xl:col-span-2 space-y-6">
+
+                <!-- Personal Information -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                        <span class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                            <lucide-icon [img]="icons.userPlus" size="18"></lucide-icon>
+                        </span>
+                        <div>
+                            <h2 class="text-base font-semibold text-gray-800">Personal Information</h2>
+                            <p class="text-xs text-gray-400 mt-0.5">Basic contact details</p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                            <!-- Full Name -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Full Name *</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.user" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="name"
+                                        type="text"
+                                        placeholder="e.g. Sarah Johnson"
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('name')">
+                                </div>
+                                @if(errorFor('name')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('name')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Email -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Email *</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.mail" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="email"
+                                        type="email"
+                                        placeholder="customer@mail.com"
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                                        [class]="inputClass('email')">
+                                </div>
+                                @if(errorFor('email')){
+                                    <p class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                                        <lucide-icon [img]="icons.alert" size="12"></lucide-icon>
+                                        {{errorFor('email')}}
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- Phone -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Phone</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.phone" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="phone"
+                                        type="text"
+                                        placeholder="+1 555 010 2030"
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                </div>
+                            </div>
+
+                            <!-- Company -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Company</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.company" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="company"
+                                        type="text"
+                                        placeholder="e.g. Acme Corp"
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                </div>
+                            </div>
+
+                            <!-- Status -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Status</label>
+                                <div class="relative">
+                                    <select
+                                        formControlName="status"
+                                        class="w-full h-11 px-3.5 pr-9 text-sm bg-white border border-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                        @for(status of statuses; track status){
+                                            <option [value]="status">{{status}}</option>
+                                        }
+                                    </select>
+                                    <lucide-icon [img]="icons.chevronDown" size="16" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                        <span class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                            <lucide-icon [img]="icons.address" size="18"></lucide-icon>
+                        </span>
+                        <div>
+                            <h2 class="text-base font-semibold text-gray-800">Address</h2>
+                            <p class="text-xs text-gray-400 mt-0.5">Billing and shipping address</p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-5">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                            <!-- Address Line -->
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Address Line</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.address" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <input
+                                        formControlName="address"
+                                        type="text"
+                                        placeholder="Street address, P.O. box..."
+                                        class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                </div>
+                            </div>
+
+                            <!-- City -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">City</label>
+                                <input
+                                    formControlName="city"
+                                    type="text"
+                                    placeholder="e.g. New York"
+                                    class="w-full h-11 px-3.5 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            </div>
+
+                            <!-- State -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">State / Province</label>
+                                <input
+                                    formControlName="state"
+                                    type="text"
+                                    placeholder="e.g. NY"
+                                    class="w-full h-11 px-3.5 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            </div>
+
+                            <!-- Postal Code -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Postal Code</label>
+                                <input
+                                    formControlName="zip"
+                                    type="text"
+                                    placeholder="e.g. 10001"
+                                    class="w-full h-11 px-3.5 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            </div>
+
+                            <!-- Country -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Country</label>
+                                <div class="relative">
+                                    <lucide-icon [img]="icons.globe" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                    <select
+                                        formControlName="country"
+                                        class="w-full h-11 pl-10 pr-9 text-sm bg-white border border-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                        <option value="" disabled>Select country</option>
+                                        @for(country of countries; track country){
+                                            <option [value]="country">{{country}}</option>
+                                        }
+                                    </select>
+                                    <lucide-icon [img]="icons.chevronDown" size="16" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== RIGHT COLUMN ==================== -->
+            <div class="space-y-6">
+
+                <!-- Account Details -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-100">
+                        <span class="w-9 h-9 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center flex-shrink-0">
+                            <lucide-icon [img]="icons.hash" size="18"></lucide-icon>
+                        </span>
+                        <div>
+                            <h2 class="text-base font-semibold text-gray-800">Account Details</h2>
+                            <p class="text-xs text-gray-400 mt-0.5">Tax and internal information</p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-5 space-y-5">
+                        <!-- Tax ID -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1.5">Tax ID</label>
+                            <div class="relative">
+                                <lucide-icon [img]="icons.hash" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                                <input
+                                    formControlName="taxId"
+                                    type="text"
+                                    placeholder="e.g. VAT-123456"
+                                    class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            </div>
+                        </div>
+
+                        <!-- Welcome email toggle -->
+                        <div class="flex items-center justify-between gap-4 px-4 py-3 rounded-lg bg-gray-50 border border-gray-100">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-800">Send Welcome Email</p>
+                                <p class="text-xs text-gray-400 mt-0.5">Send a welcome message with account details.</p>
+                            </div>
+                            <app-toggle [checked]="form.controls.sendWelcome.value" (toggled)="form.controls.sendWelcome.setValue($event)"></app-toggle>
+                        </div>
+
+                        <!-- Notes -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1.5">Notes</label>
+                            <textarea
+                                formControlName="notes"
+                                rows="4"
+                                placeholder="Internal notes about this customer..."
+                                class="w-full px-3.5 py-3 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-sm font-semibold text-gray-800 mb-4">Summary</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Name</span>
+                            <span class="font-medium text-gray-700 truncate max-w-[55%]">{{form.controls.name.value || "—"}}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Email</span>
+                            <span class="font-medium text-gray-700 truncate max-w-[55%]">{{form.controls.email.value || "—"}}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Company</span>
+                            <span class="font-medium text-gray-700 truncate max-w-[55%]">{{form.controls.company.value || "—"}}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-400">Location</span>
+                            <span class="font-medium text-gray-700 truncate max-w-[55%]">{{form.controls.city.value || form.controls.country.value || "—"}}</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <span class="text-sm font-semibold text-gray-700">Status</span>
+                            <span class="font-medium text-blue-600">{{form.controls.status.value}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== BOTTOM ACTION BAR ==================== -->
+        <div class="sticky bottom-4 z-20 mt-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white rounded-xl shadow-lg shadow-gray-200/60 border border-gray-200 px-6 py-4">
+                <div class="flex items-center gap-4">
+                    <p class="text-xs text-gray-400">
+                        <span class="font-medium text-gray-500">Note:</span> fields marked with * are required
+                    </p>
+                    @if(form.invalid){
+                        <p class="hidden sm:flex items-center gap-1 text-xs font-medium text-red-500">
+                            <lucide-icon [img]="icons.alert" size="13"></lucide-icon>
+                            Please fix the highlighted fields
+                        </p>
+                    }
+                </div>
+                <div class="flex items-center gap-3">
+                    <app-button [variant]="'secondary'" [icon]="icons.x" (clicked)="onCancel()">Cancel</app-button>
+                    <app-button type="submit" [icon]="icons.save" [loading]="isSaving" loadingText="Saving Customer..." [disabled]="form.invalid" (clicked)="onSubmit()">Save Customer</app-button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

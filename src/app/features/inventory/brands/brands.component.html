@@ -1,0 +1,131 @@
+<div class="p-6 space-y-6">
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Brands</h1>
+            <p class="text-sm text-gray-500 mt-1">Manage the brands associated with your products.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <app-button variant="secondary" [icon]="icons.download">Export</app-button>
+            <app-button [icon]="icons.plus" (clicked)="addBrand()">Add Brand</app-button>
+        </div>
+    </div>
+
+    <!-- Brands table -->
+    <app-data-table
+        [data]="brands"
+        [columns]="columns"
+        [searchKeys]="['name', 'origin']"
+        title="Brand Directory"
+        [description]="brands.length + ' registered brands · ' + activeCount + ' active'"
+        searchPlaceholder="Search brands..."
+        [pageSize]="10"
+        [actions]="true"
+        (view)="viewBrand($event)"
+        (edit)="editBrand($event)"
+        (delete)="deleteBrand($event)">
+        <ng-template tableCell="name" let-row>
+            <div class="flex items-center gap-3">
+                <span class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                    {{ initials(row.name) }}
+                </span>
+                <span class="font-medium text-gray-800">{{ row.name }}</span>
+            </div>
+        </ng-template>
+        <ng-template tableCell="origin" let-row>
+            <span class="flex items-center gap-1.5 text-gray-600">
+                <lucide-icon [img]="icons.globe" size="14" class="text-gray-400"></lucide-icon>
+                {{ row.origin }}
+            </span>
+        </ng-template>
+        <ng-template tableCell="products" let-row>
+            <span class="flex items-center justify-end gap-1.5 text-gray-700 font-medium">
+                <lucide-icon [img]="icons.package" size="14" class="text-gray-400"></lucide-icon>
+                {{ row.products }}
+            </span>
+        </ng-template>
+    </app-data-table>
+</div>
+
+<!-- Add / edit brand modal -->
+<app-modal [open]="modalOpen" [title]="modalTitle" [subtitle]="modalSubtitle" [icon]="icons.award" iconBg="bg-violet-100" iconColor="text-violet-600" (closed)="closeModal()">
+    <form [formGroup]="form" (ngSubmit)="saveBrand()" novalidate class="space-y-5">
+        <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5">Brand Name *</label>
+            <input
+                formControlName="name"
+                type="text"
+                placeholder="e.g. Logitech"
+                class="w-full h-11 px-3.5 text-sm bg-white border rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                [class]="isInvalid('name') ? 'border-red-300 ring-2 ring-red-100' : 'border-gray-200'">
+            @if (isInvalid('name')) {
+                <p class="mt-1.5 text-xs text-red-500">Brand name is required (min 2 characters)</p>
+            }
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1.5">Origin</label>
+            <div class="relative">
+                <lucide-icon [img]="icons.globe" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></lucide-icon>
+                <input
+                    formControlName="origin"
+                    type="text"
+                    placeholder="e.g. Switzerland"
+                    class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border border-gray-200 rounded-lg placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-4 px-4 py-3 rounded-lg bg-gray-50 border border-gray-100">
+            <div>
+                <p class="text-sm font-semibold text-gray-800">Active</p>
+                <p class="text-xs text-gray-400 mt-0.5">Inactive brands will not appear in product forms.</p>
+            </div>
+            <app-toggle [checked]="form.controls.active.value" (toggled)="form.controls.active.setValue($event)"></app-toggle>
+        </div>
+
+        <div class="flex items-center justify-end gap-3" modalFooter>
+            <app-button variant="secondary" (clicked)="closeModal()">Cancel</app-button>
+            <app-button type="submit" [icon]="icons.check" [disabled]="form.invalid">{{ submitLabel }}</app-button>
+        </div>
+    </form>
+</app-modal>
+
+<!-- View brand modal -->
+@if (viewedBrand) {
+    <app-modal [open]="viewModalOpen" title="Brand Details" [subtitle]="viewedBrand.name" [icon]="icons.award" iconBg="bg-violet-100" iconColor="text-violet-600" (closed)="closeViewModal()">
+        <div class="flex flex-col items-center text-center pb-2">
+            <span class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xl font-bold flex items-center justify-center mb-3">
+                {{ initials(viewedBrand.name) }}
+            </span>
+            <h3 class="text-lg font-bold text-gray-800">{{ viewedBrand.name }}</h3>
+            @if (viewedBrand.active) {
+                <app-badge label="Active" variant="green"></app-badge>
+            } @else {
+                <app-badge label="Inactive" variant="gray"></app-badge>
+            }
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mt-5">
+            <div class="px-4 py-3 rounded-lg bg-gray-50 border border-gray-100">
+                <p class="text-xs text-gray-400">Origin</p>
+                <p class="flex items-center gap-1.5 text-sm font-medium text-gray-800 mt-1">
+                    <lucide-icon [img]="icons.globe" size="14" class="text-gray-400"></lucide-icon>
+                    {{ viewedBrand.origin }}
+                </p>
+            </div>
+            <div class="px-4 py-3 rounded-lg bg-gray-50 border border-gray-100">
+                <p class="text-xs text-gray-400">Products</p>
+                <p class="flex items-center gap-1.5 text-sm font-medium text-gray-800 mt-1">
+                    <lucide-icon [img]="icons.package" size="14" class="text-gray-400"></lucide-icon>
+                    {{ viewedBrand.products }} products
+                </p>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 mt-6" modalFooter>
+            <app-button variant="secondary" (clicked)="closeViewModal()">Close</app-button>
+            <app-button [icon]="icons.edit" (clicked)="closeViewModal(); editBrand(viewedBrand)">Edit Brand</app-button>
+        </div>
+    </app-modal>
+}
+

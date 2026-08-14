@@ -1,0 +1,78 @@
+<div class="p-6 space-y-6">
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Customers</h1>
+            <p class="text-sm text-gray-500 mt-1">Manage your customer base, contact details and purchase history.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <app-button variant="secondary" [icon]="icons.download">Export</app-button>
+            <app-button [icon]="icons.plus" (clicked)="addCustomer()">Add Customer</app-button>
+        </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        @for (card of stats; track card.title) {
+            <app-stat-card [title]="card.title" [value]="card.value" [icon]="card.icon" [iconBg]="card.iconBg" [iconColor]="card.iconColor" [note]="card.note"></app-stat-card>
+        }
+    </div>
+
+    <!-- Customers table -->
+    <app-data-table
+        [data]="customers()"
+        [columns]="columns"
+        [searchKeys]="['name', 'email', 'phone']"
+        title="Customer List"
+        [description]="customers().length + ' customers'"
+        searchPlaceholder="Search customers..."
+        [pageSize]="10"
+        [actions]="true"
+        (edit)="editCustomer($event)"
+        (delete)="deleteCustomer($event)">
+        <ng-template tableCell="name" let-row>
+            <div class="flex items-center gap-3">
+                <span class="w-9 h-9 rounded-full bg-gradient-to-br from-slate-600 to-slate-900 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                    {{ initials(row.name) }}
+                </span>
+                <span class="font-medium text-gray-800">{{ row.name }}</span>
+            </div>
+        </ng-template>
+        <ng-template tableCell="email" let-row>
+            <span class="flex items-center gap-1.5 text-gray-600">
+                <lucide-icon [img]="icons.mail" size="14" class="text-gray-400"></lucide-icon>
+                {{ row.email }}
+            </span>
+        </ng-template>
+        <ng-template tableCell="phone" let-row>
+            <span class="flex items-center gap-1.5 text-gray-600">
+                <lucide-icon [img]="icons.phone" size="14" class="text-gray-400"></lucide-icon>
+                {{ row.phone }}
+            </span>
+        </ng-template>
+    </app-data-table>
+</div>
+
+<!-- ==================== DELETE CONFIRM MODAL ==================== -->
+<app-modal
+    [open]="deleteTarget !== null"
+    title="Delete Customer"
+    [subtitle]="deleteTarget?.name"
+    [icon]="icons.trash"
+    iconBg="bg-red-100"
+    iconColor="text-red-600"
+    (closed)="closeDelete()">
+    @if (deleteTarget) {
+        <p class="text-sm text-gray-600 leading-relaxed">
+            Are you sure you want to delete
+            <span class="font-semibold text-gray-800">{{ deleteTarget.name }}</span>? Their order history and contact
+            details will be permanently removed. This action cannot be undone.
+        </p>
+    }
+
+    <div class="flex items-center justify-end gap-3" modalFooter>
+        <app-button variant="secondary" (clicked)="closeDelete()">Cancel</app-button>
+        <app-button variant="danger" [icon]="icons.trash" (clicked)="confirmDelete()">Delete Customer</app-button>
+    </div>
+</app-modal>

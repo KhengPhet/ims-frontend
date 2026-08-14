@@ -1,0 +1,53 @@
+<div class="p-6 space-y-6">
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Roles</h1>
+            <p class="text-sm text-gray-500 mt-1">Define role-based permissions and access levels.</p>
+        </div>
+        <app-button [icon]="icons.plus" (clicked)="addRole()">Create Role</app-button>
+    </div>
+
+    <!-- Roles grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        @for (card of roles; track card.role.id) {
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col hover:shadow-md transition-shadow">
+                <!-- Role header -->
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="w-12 h-12 rounded-xl flex items-center justify-center {{ card.iconBg }}">
+                            <lucide-icon [img]="icons.shield" size="24" class="{{ card.iconColor }}"></lucide-icon>
+                        </span>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">{{ card.role.name }}</h3>
+                            <p class="text-xs text-gray-400">{{ card.role.users }} users</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <p class="text-sm text-gray-500 mt-4 leading-relaxed">{{ card.role.description }}</p>
+
+                <!-- Permissions -->
+                <div class="mt-5 pt-5 border-t border-gray-100 flex-1">
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Permissions</p>
+                    <ul class="space-y-2.5">
+                        @for (permission of card.role.permissions; track permission) {
+                            <li class="flex items-center gap-2 text-sm text-gray-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span>
+                                {{ permission }}
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+                <!-- Actions -->
+                <div class="mt-5 flex items-center justify-between gap-3">
+                    <app-button variant="secondary" size="sm" [icon]="icons.settings" (clicked)="manageRole(card.role)">Manage</app-button>
+                    <app-badge [label]="card.role.users + ' users'" variant="blue"></app-badge>
+                </div>
+            </div>
+        }
+    </div>
+</div>

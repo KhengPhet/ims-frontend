@@ -1,0 +1,126 @@
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+
+    <!-- Header -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 px-6 py-5 border-b border-gray-100">
+        <div>
+            @if (title) {
+                <h2 class="text-base font-semibold text-gray-800">{{ title }}</h2>
+            }
+            @if (description) {
+                <p class="text-xs text-gray-400 mt-0.5">{{ description }}</p>
+            }
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5">
+            @if (filterable && filterOptions.length) {
+                <select
+                    (change)="onFilter($any($event.target).value)"
+                    class="h-11 px-3 pr-8 text-sm bg-white border border-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    <option value="">All</option>
+                    @for (option of filterOptions; track option) {
+                        <option [value]="option">{{ option }}</option>
+                    }
+                </select>
+            }
+            @if (showSearch) {
+                <div class="w-56">
+                    <app-search-bar [placeholder]="searchPlaceholder" (search)="onSearch($event)"></app-search-bar>
+                </div>
+            }
+            <ng-content select="[tableActions]"></ng-content>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-xs text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                    @for (col of columns; track col.key) {
+                        <th class="px-6 py-3 font-medium" [class]="(alignClass(col) + ' ' + (col.hide ?? '')).trim()">
+                            @if (col.sortable) {
+                                <button
+                                    type="button"
+                                    (click)="sortBy(col.key)"
+                                    class="inline-flex items-center gap-1 uppercase tracking-wider transition hover:text-gray-600"
+                                    [class]="sortKey === col.key ? 'text-blue-600' : ''">
+                                    {{ col.label }}
+                                    @if (sortKey === col.key) {
+                                        <lucide-icon [img]="icons[sortIcon(col.key)]" size="13"></lucide-icon>
+                                    }
+                                </button>
+                            } @else {
+                                <span>{{ col.label }}</span>
+                            }
+                        </th>
+                    }
+                    @if (actions) {
+                        <th class="px-6 py-3 font-medium text-right">Actions</th>
+                    }
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                @for (row of pagedRows; track $index) {
+                    <tr class="hover:bg-gray-50 transition">
+                        @for (col of columns; track col.key) {
+                            <td class="px-6 py-3.5" [class]="(alignClass(col) + ' ' + (col.hide ?? '')).trim()">
+                                @let cell = templateFor(col.key);
+                                @if (cell) {
+                                    <ng-container
+                                        *ngTemplateOutlet="cell.templateRef; context: { $implicit: row, row: row }"></ng-container>
+                                } @else if (col.badge) {
+                                    <app-badge [variant]="col.badge(row).variant" [label]="col.badge(row).label" [icon]="col.badge(row).icon"></app-badge>
+                                } @else if (col.initials) {
+                                    <span class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                                        {{ col.initials(row) }}
+                                    </span>
+                                } @else {
+                                    <span [class]="col.bold ? 'font-medium text-gray-800' : 'text-gray-600'">
+                                        {{ col.render ? col.render(row) : cellValue(row, col.key) }}
+                                    </span>
+                                }
+                            </td>
+                        }
+                        @if (actions) {
+                            <td class="px-6 py-3.5">
+                                <div class="flex items-center justify-end gap-1">
+                                    @if (showView) {
+                                        <button type="button" (click)="view.emit(row)" aria-label="View" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                            <lucide-icon [img]="icons.eye" size="16"></lucide-icon>
+                                        </button>
+                                    }
+                                    @if (showEdit) {
+                                        <button type="button" (click)="edit.emit(row)" aria-label="Edit" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                                            <lucide-icon [img]="icons.edit" size="16"></lucide-icon>
+                                        </button>
+                                    }
+                                    @if (showDelete) {
+                                        <button type="button" (click)="delete.emit(row)" aria-label="Delete" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                                            <lucide-icon [img]="icons.trash" size="16"></lucide-icon>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        }
+                    </tr>
+                } @empty {
+                    <tr>
+                        <td [attr.colspan]="columns.length + (actions ? 1 : 0)" class="px-6 py-16">
+                            <div class="flex flex-col items-center justify-center text-center">
+                                <span class="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center mb-3">
+                                    <lucide-icon [img]="icons.empty" size="26" class="text-gray-300"></lucide-icon>
+                                </span>
+                                <p class="text-sm font-medium text-gray-600">No records found</p>
+                                <p class="text-xs text-gray-400 mt-1">Try adjusting your search or filters.</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (total > 0) {
+        <app-pagination [total]="total" [pageSize]="pageSize" [page]="page" (pageChange)="onPageChange($event)"></app-pagination>
+    }
+</div>

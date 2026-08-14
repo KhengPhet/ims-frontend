@@ -2,6 +2,18 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.20.
 
+## Authentication
+
+This app includes a full JWT authentication system wired to the NestJS backend (`inventory-api`):
+
+- `src/app/core/guards/auth.guard.ts` — protects dashboard/admin routes.
+- `src/app/core/interceptors/jwt.interceptor.ts` — attaches the `Authorization: Bearer <token>` header and handles `401` (logout).
+- `src/app/core/models/auth.model.ts` — `AuthUser` / `AuthResponse` types.
+- `src/app/features/auth/auth.service.ts` — `login()`, `register(FormData)`, `getUser()`, `logout()`.
+- `src/app/features/auth/login` and `register` — Tailwind UI (register includes image upload preview).
+
+After login the token + user are stored in `localStorage` and the app redirects to `/dashboard`.
+
 ## Development server
 
 To start a local development server, run:

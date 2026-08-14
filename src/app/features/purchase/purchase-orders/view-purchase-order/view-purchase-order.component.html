@@ -1,0 +1,103 @@
+<div class="p-6 space-y-6">
+    @if (record) {
+        <!-- ==================== PAGE HEADER ==================== -->
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            <div>
+                <nav class="flex items-center gap-1.5 text-sm mb-2">
+                    <a routerLink="/purchase/orders" class="font-medium text-gray-500 hover:text-blue-600 transition">Purchase Orders</a>
+                    <lucide-icon [img]="icons.chevronRight" size="14" class="text-gray-300"></lucide-icon>
+                    <span class="font-semibold text-gray-700">Purchase Order Details</span>
+                </nav>
+                <h1 class="text-2xl font-bold text-gray-800">Purchase Order Details</h1>
+                <p class="text-sm text-gray-500 mt-1">Review purchase order information and fulfilment status.</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <app-button [variant]="'secondary'" [icon]="icons.back" (clicked)="goBack()">Back</app-button>
+                <app-button [icon]="icons.edit" (clicked)="goEdit()">Edit Purchase Order</app-button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+
+            <!-- ==================== LEFT: ORDER INFO ==================== -->
+            <div class="xl:col-span-2 space-y-6">
+
+                <!-- Order header card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-6 flex flex-col sm:flex-row sm:items-center gap-5 border-b border-gray-100">
+                        <span class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                            <lucide-icon [img]="icons.list" size="24"></lucide-icon>
+                        </span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <h2 class="text-lg font-bold text-gray-800">{{ record.poNumber }}</h2>
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-full"
+                                    [class]="statusClass(record.status).wrapper">
+                                    <span class="w-1.5 h-1.5 rounded-full" [class]="statusClass(record.status).dot"></span>
+                                    {{ statusClass(record.status).label }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                                <lucide-icon [img]="icons.store" size="14" class="text-gray-400"></lucide-icon>
+                                Supplier: {{ record.supplier }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 p-6">
+                        <div>
+                            <p class="text-xs font-medium text-gray-400 mb-1.5 flex items-center gap-1.5">
+                                <lucide-icon [img]="icons.calendar" size="13"></lucide-icon>
+                                Order Date
+                            </p>
+                            <p class="text-sm text-gray-700">{{ record.orderDate }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-medium text-gray-400 mb-1.5 flex items-center gap-1.5">
+                                <lucide-icon [img]="icons.truck" size="13"></lucide-icon>
+                                Expected Delivery
+                            </p>
+                            <p class="text-sm text-gray-700">{{ record.expectedDate }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== RIGHT: SUMMARY ==================== -->
+            <div class="space-y-6">
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-sm font-semibold text-gray-800 mb-4">Order Summary</h3>
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 rounded-lg p-4 text-center">
+                            <lucide-icon [img]="icons.package" size="20" class="text-blue-600 mx-auto"></lucide-icon>
+                            <p class="text-2xl font-bold text-gray-800 mt-2">{{ record.items }}</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Line Items</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <span class="text-sm font-medium text-gray-500">Total Value</span>
+                            <span class="text-xl font-bold text-emerald-600">{{ currency(record.total) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-sm font-semibold text-gray-800 mb-3">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button
+                            (click)="goEdit()"
+                            class="w-full flex items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                            <span class="flex items-center gap-2">
+                                <lucide-icon [img]="icons.edit" size="16" class="text-blue-600"></lucide-icon>
+                                Edit Purchase Order
+                            </span>
+                            <lucide-icon [img]="icons.chevronRight" size="14" class="text-gray-300"></lucide-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,168 @@
+<!-- Mobile backdrop -->
+@if (!layout.isDesktop() && layout.sidebarOpen()) {
+    <div class="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm" (click)="layout.closeSidebar()"></div>
+}
+
+<!-- Sidebar -->
+<aside
+    class="fixed inset-y-0 left-0 z-50 flex h-full w-[280px] flex-col border-r border-slate-800 bg-slate-950 shadow-2xl shadow-slate-950/40 transition-transform duration-300 ease-in-out lg:static lg:h-screen lg:shadow-none"
+    [class.translate-x-0]="layout.sidebarOpen() || layout.isDesktop()"
+    [class.-translate-x-full]="!layout.sidebarOpen() && !layout.isDesktop()"
+>
+    <!-- Logo -->
+    <div class="flex h-[70px] flex-shrink-0 items-center gap-3 border-b border-slate-800/80 px-6">
+        <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-600/30">
+            <lucide-icon [img]="icons.logo" size="22"></lucide-icon>
+        </div>
+        <div class="min-w-0">
+            <h1 class="truncate text-lg font-bold leading-tight tracking-tight text-white">
+                Inventory
+            </h1>
+            <p class="truncate text-xs font-medium text-slate-400">
+                Management System
+            </p>
+        </div>
+        <button
+            (click)="layout.closeSidebar()"
+            aria-label="Close sidebar"
+            class="ml-auto flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white lg:hidden"
+        >
+            <lucide-icon [img]="icons.close" size="18"></lucide-icon>
+        </button>
+    </div>
+
+    <!-- User profile -->
+    <!-- <div class="flex flex-shrink-0 items-center gap-3 border-b border-slate-800/80 px-6 py-4">
+        <div class="relative flex-shrink-0">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 text-sm font-bold text-white ring-2 ring-slate-700/50">
+                {{ user.initials }}
+            </div>
+            <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-950 bg-emerald-500"></span>
+        </div>
+        <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-semibold text-white">{{ user.name }}</p>
+            <p class="truncate text-xs text-slate-400">{{ user.role }}</p>
+        </div>
+    </div> -->
+
+    <!-- Navigation -->
+    <nav class="flex-1 space-y-1.5 overflow-y-auto px-4 py-5 [scrollbar-width:thin] [scrollbar-color:#334155_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-track]:bg-transparent">
+        <p class="mb-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+            Main Menu
+        </p>
+
+        @for (menu of menus; track menu.title) {
+            <div>
+                @if (menu.children?.length) {
+                    <!-- Parent / dropdown toggle -->
+                    <button
+                        (click)="toggleSection(menu)"
+                        [attr.aria-expanded]="isSectionOpen(menu)"
+                        class="group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-300 transition-all duration-200 hover:bg-slate-800/70 hover:text-white"
+                        [style.color]="isParentActive(menu) ? '#ffffff' : ''"
+                        [style.background-color]="isParentActive(menu) ? '#1e293b' : ''"
+                    >
+                        <span
+                            class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-blue-500 shadow-[0_0_8px_rgba(37,99,235,0.6)] transition-opacity duration-200"
+                            [style.opacity]="isParentActive(menu) ? '1' : '0'"
+                        ></span>
+                        <span
+                            class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-slate-800/60 text-slate-300 transition-colors duration-200 group-hover:bg-blue-600/20 group-hover:text-blue-400"
+                            [style.background-color]="isParentActive(menu) ? '#2563eb' : ''"
+                            [style.color]="isParentActive(menu) ? '#ffffff' : ''"
+                        >
+                            <lucide-icon [img]="menu.icon" size="18"></lucide-icon>
+                        </span>
+                        <span class="flex-1 truncate text-left">{{ menu.title }}</span>
+                        @if (menu.badge) {
+                            <span class="rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+                                {{ menu.badge }}
+                            </span>
+                        }
+                        <lucide-icon
+                            [img]="icons.chevron"
+                            size="16"
+                            class="flex-shrink-0 text-slate-500 transition-transform duration-300"
+                            [class.rotate-180]="isSectionOpen(menu)"
+                        ></lucide-icon>
+                    </button>
+
+                    <!-- Expandable submenu -->
+                    <div
+                        class="grid transition-[grid-template-rows,opacity,visibility] duration-300 ease-in-out"
+                        [style.grid-template-rows]="isSectionOpen(menu) ? '1fr' : '0fr'"
+                        [style.opacity]="isSectionOpen(menu) ? '1' : '0'"
+                        [style.visibility]="isSectionOpen(menu) ? 'visible' : 'hidden'"
+                    >
+                        <div class="min-h-0 overflow-hidden">
+                            <ul class="ml-5 mt-1.5 space-y-1 border-l border-slate-800 pl-2">
+                                @for (item of menu.children; track item.title) {
+                                    <li>
+                                        <a
+                                            [routerLink]="item.route"
+                                            routerLinkActive="bg-blue-600 text-white! shadow-lg shadow-blue-600/25 hover:bg-blue-700!"
+                                            #rla="routerLinkActive"
+                                            [attr.aria-current]="rla.isActive ? 'page' : null"
+                                            (click)="layout.closeSidebar()"
+                                            class="group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-all duration-200 hover:bg-slate-800/70 hover:text-white hover:translate-x-0.5"
+                                        >
+                                            <span
+                                                class="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-blue-500 shadow-[0_0_8px_rgba(37,99,235,0.6)] transition-opacity duration-200"
+                                                [style.opacity]="rla.isActive ? '1' : '0'"
+                                            ></span>
+                                            <lucide-icon
+                                                [img]="item.icon"
+                                                size="17"
+                                                class="flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
+                                            ></lucide-icon>
+                                            <span class="truncate">{{ item.title }}</span>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                } @else {
+                    <!-- Single menu item -->
+                    <a
+                        [routerLink]="menu.route"
+                        routerLinkActive="bg-blue-600 text-white! shadow-lg shadow-blue-600/25 hover:bg-blue-700!"
+                        #rla="routerLinkActive"
+                        [attr.aria-current]="rla.isActive ? 'page' : null"
+                        (click)="layout.closeSidebar()"
+                        class="group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-300 transition-all duration-200 hover:bg-slate-800/70 hover:text-white hover:translate-x-0.5"
+                    >
+                        <span
+                            class="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-blue-500 shadow-[0_0_8px_rgba(37,99,235,0.6)] transition-opacity duration-200"
+                            [style.opacity]="rla.isActive ? '1' : '0'"
+                        ></span>
+                        <span
+                            class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-slate-800/60 text-slate-300 transition-colors duration-200 group-hover:bg-blue-600/20 group-hover:text-blue-400"
+                        >
+                            <lucide-icon [img]="menu.icon" size="18"></lucide-icon>
+                        </span>
+                        <span class="flex-1 truncate text-left">{{ menu.title }}</span>
+                        @if (menu.badge) {
+                            <span class="rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+                                {{ menu.badge }}
+                            </span>
+                        }
+                    </a>
+                }
+            </div>
+        }
+    </nav>
+
+    <!-- Logout -->
+    <!-- <div class="flex-shrink-0 border-t border-slate-800/80 p-4">
+        <button
+            (click)="logout()"
+            class="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-300 transition-all duration-200 hover:bg-red-500/10 hover:text-red-400"
+        >
+            <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-slate-800/60 text-slate-300 transition-colors duration-200 group-hover:bg-red-500/15 group-hover:text-red-400">
+                <lucide-icon [img]="icons.logout" size="18"></lucide-icon>
+            </span>
+            <span class="flex-1 text-left">Logout</span>
+        </button>
+    </div> -->
+</aside>
