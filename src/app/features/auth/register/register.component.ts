@@ -1,204 +1,693 @@
-import { Component, inject } from "@angular/core";
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from "@angular/forms";
-import { Router, RouterModule } from "@angular/router";
+import {
+    Component,
+    inject,
+    OnDestroy,
+} from '@angular/core';
+
+import {
+    CommonModule,
+} from '@angular/common';
+
+import {
+    AbstractControl,
+    FormBuilder,
+    ReactiveFormsModule,
+    ValidationErrors,
+    Validators,
+} from '@angular/forms';
+
+import {
+    Router,
+    RouterLink,
+} from '@angular/router';
+
 import {
     LucideAngularModule,
-    Boxes,
-    CircleAlert,
+    AlertCircle,
     Eye,
     EyeOff,
     ImagePlus,
     KeyRound,
-    LoaderCircle,
     Lock,
-    Mail,
-    ShieldCheck,
+    User,
     UserPlus,
-    UserRound,
-} from "lucide-angular";
-import { ButtonComponent } from "../../../shared/components/button/button.component";
-import { AuthService } from "../auth.service";
+    ShieldCheck,
+} from 'lucide-angular';
+
+import {
+    ButtonComponent,
+} from '../../../shared/components/button/button.component';
+import { AuthService } from '../auth.service';
+
 
 @Component({
-    selector: "app-register",
-    standalone: true,
-    imports: [ReactiveFormsModule, RouterModule, LucideAngularModule, ButtonComponent],
-    templateUrl: "./register.component.html",
-})
-export class RegisterComponent {
-    private readonly fb = inject(FormBuilder);
-    private readonly router = inject(Router);
-    private readonly authService = inject(AuthService);
+    selector: 'app-register',
 
-    icons = {
-        logo: Boxes,
-        userPlus: UserPlus,
-        user: UserRound,
-        mail: Mail,
-        lock: Lock,
-        key: KeyRound,
+    standalone: true,
+
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        RouterLink,
+        LucideAngularModule,
+        ButtonComponent,
+    ],
+
+    templateUrl: './register.component.html',
+})
+export class RegisterComponent
+    implements OnDestroy {
+
+
+    private readonly fb =
+        inject(FormBuilder);
+
+    private readonly authService =
+        inject(AuthService);
+
+    private readonly router =
+        inject(Router);
+
+
+    // ==========================
+    // ICONS
+    // ==========================
+
+    readonly icons = {
+
+        logo: KeyRound,
+
         shield: ShieldCheck,
+
+        key: KeyRound,
+
+        user: User,
+
+        userPlus: UserPlus,
+
+        mail: AlertCircle,
+
+        lock: Lock,
+
         eye: Eye,
+
         eyeOff: EyeOff,
-        alert: CircleAlert,
-        loader: LoaderCircle,
+
         imagePlus: ImagePlus,
+
+        alert: AlertCircle,
+
     };
 
+
+    // ==========================
+    // STATE
+    // ==========================
+
     isSaving = false;
+
     showPassword = false;
+
     showConfirm = false;
-    serverError = "";
+
+    serverError = '';
+
+    imageError = '';
 
     selectedFile: File | null = null;
+
     imagePreview: string | null = null;
-    imageError = "";
 
-    form = this.fb.nonNullable.group(
-        {
-            username: ["", [Validators.required, Validators.minLength(2)]],
-            email: ["", [Validators.required, Validators.email]],
-            password: ["", [Validators.required, Validators.minLength(6)]],
-            confirmPassword: ["", [Validators.required]],
-        },
-        { validators: this.matchPasswords },
-    );
 
-    get passwordMatchError(): boolean {
-        return (
-            !!this.form.controls.confirmPassword.value &&
-            !!this.form.controls.password.value &&
-            this.form.controls.password.value !== this.form.controls.confirmPassword.value
+    // ==========================
+    // FORM
+    // ==========================
+
+    readonly form =
+        this.fb.nonNullable.group(
+
+            {
+
+                username: [
+                    '',
+                    [
+                        Validators.required,
+                        Validators.minLength(3),
+                        Validators.maxLength(30),
+                    ],
+                ],
+
+
+                email: [
+                    '',
+                    [
+                        Validators.required,
+                        Validators.email,
+                    ],
+                ],
+
+
+                password: [
+                    '',
+                    [
+                        Validators.required,
+                        Validators.minLength(6),
+                    ],
+                ],
+
+
+                confirmPassword: [
+                    '',
+                    [
+                        Validators.required,
+                    ],
+                ],
+
+            },
+
+            {
+                validators:
+                    this.passwordMatchValidator,
+            }
+
         );
-    }
 
-    private matchPasswords(control: AbstractControl): ValidationErrors | null {
-        const password = control.get("password")?.value;
-        const confirmPassword = control.get("confirmPassword")?.value;
-        if (password && confirmPassword && password !== confirmPassword) {
-            return { mismatch: true };
+
+    // ==========================
+    // PASSWORD MATCH
+    // ==========================
+
+    private passwordMatchValidator(
+        control: AbstractControl
+    ): ValidationErrors | null {
+
+        const password =
+            control.get('password')?.value;
+
+        const confirmPassword =
+            control.get('confirmPassword')?.value;
+
+
+        if (
+            password &&
+            confirmPassword &&
+            password !== confirmPassword
+        ) {
+
+            return {
+                passwordMismatch: true,
+            };
+
         }
+
+
         return null;
+
     }
 
-    isInvalid(controlName: string): boolean {
-        const control = this.form.get(controlName);
-        return (
-            (!!control && !!control.errors && (control.touched || control.dirty)) ||
-            (controlName === "confirmPassword" && this.passwordMatchError && (control?.touched ?? false))
-        );
-    }
 
-    errorFor(controlName: string): string {
-        const control = this.form.get(controlName);
-        const show = control?.touched || control?.dirty;
-        if (!control || !show) {
-            return "";
-        }
-        const errors = control.errors;
-        if (controlName === "username") {
-            if (errors?.["required"]) return "Username is required";
-            if (errors?.["minlength"]) return "Username must be at least 2 characters";
-        }
-        if (controlName === "email") {
-            if (errors?.["required"]) return "Email is required";
-            if (errors?.["email"]) return "Please enter a valid email address";
-        }
-        if (controlName === "password") {
-            if (errors?.["required"]) return "Password is required";
-            if (errors?.["minlength"]) return "Password must be at least 6 characters";
-        }
-        if (controlName === "confirmPassword") {
-            if (errors?.["required"]) return "Please confirm your password";
-            if (this.passwordMatchError) return "Passwords do not match";
-        }
-        return "Invalid value";
-    }
-
-    inputClass(controlName: string): string {
-        return this.isInvalid(controlName) ? "border-red-300 ring-2 ring-red-100" : "border-gray-200";
-    }
+    // ==========================
+    // TOGGLE PASSWORD
+    // ==========================
 
     togglePassword(): void {
-        this.showPassword = !this.showPassword;
+
+        this.showPassword =
+            !this.showPassword;
+
     }
+
+
+    // ==========================
+    // TOGGLE CONFIRM
+    // ==========================
 
     toggleConfirm(): void {
-        this.showConfirm = !this.showConfirm;
+
+        this.showConfirm =
+            !this.showConfirm;
+
     }
 
-    onFileSelected(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        const file = input.files?.[0];
-        this.imageError = "";
-        this.imagePreview = null;
-        this.selectedFile = null;
+
+    // ==========================
+    // FILE SELECT
+    // ==========================
+
+    onFileSelected(
+        event: Event
+    ): void {
+
+        this.imageError = '';
+
+
+        const input =
+            event.target as HTMLInputElement;
+
+
+        const file =
+            input.files?.[0];
+
+
         if (!file) {
+
             return;
+
         }
-        if (!file.type.startsWith("image/")) {
-            this.imageError = "Please select an image file";
+
+
+        // Maximum 5MB
+
+        if (
+            file.size >
+            5 * 1024 * 1024
+        ) {
+
+            this.imageError =
+                'Image must be less than 5MB.';
+
+            input.value = '';
+
             return;
+
         }
-        if (file.size > 5 * 1024 * 1024) {
-            this.imageError = "Image size must be less than 5MB";
+
+
+        // Check image
+
+        if (
+            !file.type.startsWith(
+                'image/'
+            )
+        ) {
+
+            this.imageError =
+                'Please select an image file.';
+
+            input.value = '';
+
             return;
+
         }
+
+
         this.selectedFile = file;
-        const reader = new FileReader();
-        reader.onload = () => {
-            this.imagePreview = reader.result as string;
-        };
-        reader.readAsDataURL(file);
+
+
+        // Preview
+
+        this.imagePreview =
+            URL.createObjectURL(file);
+
     }
+
+
+    // ==========================
+    // REMOVE IMAGE
+    // ==========================
+
     removeImage(): void {
+
+        if (this.imagePreview) {
+
+            URL.revokeObjectURL(
+                this.imagePreview
+            );
+
+        }
+
+
         this.selectedFile = null;
+
         this.imagePreview = null;
-        this.imageError = "";
+
+        this.imageError = '';
+
     }
+
+
+    // ==========================
+    // SUBMIT
+    // ==========================
 
     onSubmit(): void {
-        if (this.form.invalid || this.passwordMatchError) {
-            this.form.markAllAsTouched();
-            return;
-        }
+
         if (this.isSaving) {
+
             return;
+
         }
+
+
+        if (
+            this.form.invalid
+        ) {
+
+            this.form.markAllAsTouched();
+
+            return;
+
+        }
+
+
+        if (this.imageError) {
+
+            return;
+
+        }
+
+
         this.isSaving = true;
-        this.serverError = "";
 
-        const v = this.form.getRawValue();
+        this.serverError = '';
 
-        const formData = new FormData();
-        formData.append("username", v.username);
-        formData.append("email", v.email);
-        formData.append("password", v.password);
+
+        const {
+            username,
+            email,
+            password,
+        } =
+            this.form.getRawValue();
+
+
+        // ==========================
+        // FORM DATA
+        // ==========================
+
+        const formData =
+            new FormData();
+
+
+        formData.append(
+            'username',
+            username.trim()
+        );
+
+
+        formData.append(
+            'email',
+            email.trim()
+        );
+
+
+        formData.append(
+            'password',
+            password
+        );
+
+
         if (this.selectedFile) {
-            formData.append("image", this.selectedFile, this.selectedFile.name);
+
+            formData.append(
+                'image',
+                this.selectedFile
+            );
+
         }
 
-        this.authService.register(formData).subscribe({
-            next: () => {
-                this.isSaving = false;
-                this.router.navigate(["/login"]);
-            },
-            error: (error) => {
-                this.isSaving = false;
-                this.serverError = this.extractErrorMessage(error, "Registration failed. Please try again.");
-            },
-        });
+
+        // ==========================
+        // API
+        // ==========================
+
+        this.authService
+            .register(formData)
+            .subscribe({
+
+                next: (response) => {
+
+                    console.log(
+                        'REGISTER SUCCESS:',
+                        response
+                    );
+
+
+                    this.isSaving = false;
+
+
+                    // Clear form
+
+                    this.form.reset();
+
+
+                    this.removeImage();
+
+
+                    // Go login
+
+                    this.router.navigate([
+                        '/login',
+                    ]);
+
+                },
+
+
+                error: (error) => {
+
+                    console.error(
+                        'REGISTER ERROR:',
+                        error
+                    );
+
+
+                    this.isSaving = false;
+
+
+                    if (
+                        error?.status === 0
+                    ) {
+
+                        this.serverError =
+                            'Cannot connect to server. Please check your API URL.';
+
+                        return;
+
+                    }
+
+
+                    this.serverError =
+                        this.getServerError(error);
+
+                },
+
+            });
+
     }
 
-    private extractErrorMessage(error: unknown, fallback: string): string {
-        const body = (error as { error?: { message?: unknown } })?.error;
-        const msg = body?.message;
-        if (Array.isArray(msg)) {
-            return msg[0] || fallback;
+
+    // ==========================
+    // SERVER ERROR
+    // ==========================
+
+    private getServerError(
+        error: any
+    ): string {
+
+        const message =
+            error?.error?.message;
+
+
+        if (
+            Array.isArray(message)
+        ) {
+
+            return message.join(', ');
+
         }
-        if (typeof msg === "string" && msg.length > 0) {
-            return msg;
+
+
+        if (
+            typeof message === 'string'
+        ) {
+
+            return message;
+
         }
-        return fallback;
+
+
+        if (
+            error?.status === 409
+        ) {
+
+            return 'Email or username already exists.';
+
+        }
+
+
+        if (
+            error?.status === 400
+        ) {
+
+            return 'Invalid registration information.';
+
+        }
+
+
+        return 'Registration failed. Please try again.';
+
     }
+
+
+    // ==========================
+    // VALIDATION ERROR
+    // ==========================
+
+    errorFor(
+        controlName: string
+    ): string {
+
+        const control =
+            this.form.get(controlName);
+
+
+        if (
+            !control ||
+            !control.touched
+        ) {
+
+            return '';
+
+        }
+
+
+        if (
+            control.hasError('required')
+        ) {
+
+            return `${this.getLabel(controlName)
+                } is required.`;
+
+        }
+
+
+        if (
+            control.hasError('email')
+        ) {
+
+            return 'Please enter a valid email.';
+
+        }
+
+
+        if (
+            control.hasError('minlength')
+        ) {
+
+            if (
+                controlName === 'username'
+            ) {
+
+                return 'Username must be at least 3 characters.';
+
+            }
+
+
+            return 'Password must be at least 6 characters.';
+
+        }
+
+
+        if (
+            controlName === 'confirmPassword' &&
+            this.form.hasError(
+                'passwordMismatch'
+            )
+        ) {
+
+            return 'Passwords do not match.';
+
+        }
+
+
+        return '';
+
+    }
+
+
+    // ==========================
+    // INPUT CLASS
+    // ==========================
+
+    inputClass(
+        controlName: string
+    ): string {
+
+        const control =
+            this.form.get(controlName);
+
+
+        if (
+            control?.invalid &&
+            control?.touched
+        ) {
+
+            return 'border-red-300 focus:ring-red-500';
+
+        }
+
+
+        if (
+            controlName === 'confirmPassword' &&
+            this.form.hasError(
+                'passwordMismatch'
+            ) &&
+            control?.touched
+        ) {
+
+            return 'border-red-300 focus:ring-red-500';
+
+        }
+
+
+        return 'border-gray-200';
+
+    }
+
+
+    // ==========================
+    // LABEL
+    // ==========================
+
+    private getLabel(
+        controlName: string
+    ): string {
+
+        switch (controlName) {
+
+            case 'username':
+                return 'Username';
+
+            case 'email':
+                return 'Email';
+
+            case 'password':
+                return 'Password';
+
+            case 'confirmPassword':
+                return 'Confirm password';
+
+            default:
+                return 'Field';
+
+        }
+
+    }
+
+
+    // ==========================
+    // DESTROY
+    // ==========================
+
+    ngOnDestroy(): void {
+
+        if (this.imagePreview) {
+
+            URL.revokeObjectURL(
+                this.imagePreview
+            );
+
+        }
+
+    }
+
 }

@@ -1,205 +1,283 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
-
-import { environment } from '../../../environments/environment';
+import {
+    Injectable,
+    inject,
+} from '@angular/core';
 
 import {
-  AuthResponse,
-  AuthUser,
-  RegisterResponse,
-  TOKEN_KEY,
-  USER_KEY,
-} from '../../core/models/auth.model';
+    HttpClient,
+} from '@angular/common/http';
+
+import {
+    Router,
+} from '@angular/router';
+
+import {
+    Observable,
+    tap,
+} from 'rxjs';
+
+import {
+    environment,
+} from '../../../environments/environment';
+import { AuthResponse, AuthUser, RegisterResponse, TOKEN_KEY, USER_KEY } from '../../core/models/auth.model';
+
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class AuthService {
-  private readonly http = inject(HttpClient);
-  private readonly router = inject(Router);
 
-  private readonly apiUrl = `${environment.apiUrl}/auth`;
+    private readonly http = inject(HttpClient);
 
-  // =========================
-  // LOGIN
-  // =========================
+    private readonly router = inject(Router);
 
-  login(
-    email: string,
-    password: string
-  ): Observable<AuthResponse> {
+    private readonly apiUrl =
+        `${environment.apiUrl}/auth`;
 
-    return this.http
-      .post<AuthResponse>(
-        `${this.apiUrl}/login`,
-        {
-          email: email.trim(),
-          password,
+
+    // =========================
+    // LOGIN
+    // =========================
+
+    login(
+        email: string,
+        password: string
+    ): Observable<AuthResponse> {
+
+        return this.http
+            .post<AuthResponse>(
+                `${this.apiUrl}/login`,
+                {
+                    email,
+                    password,
+                }
+            )
+            .pipe(
+                tap((response) => {
+
+                    this.setSession(response);
+
+                })
+            );
+    }
+
+
+    // =========================
+    // REGISTER
+    // =========================
+
+    register(
+        formData: FormData
+    ): Observable<RegisterResponse> {
+
+        // Do NOT set Content-Type manually.
+        // Angular/browser sets multipart/form-data + boundary automatically.
+
+        return this.http.post<RegisterResponse>(
+            `${this.apiUrl}/register`,
+            formData
+        );
+    }
+
+
+    // =========================
+    // PROFILE
+    // =========================
+
+    getProfile(): Observable<AuthUser> {
+
+        return this.http.get<AuthUser>(
+            `${this.apiUrl}/profile`
+        );
+    }
+
+
+    // =========================
+    // TOKEN
+    // =========================
+
+    getToken(): string | null {
+
+        if (
+            typeof window === 'undefined'
+        ) {
+            return null;
         }
-      )
-      .pipe(
-        tap((response) => {
-          console.log('LOGIN SUCCESS:', response);
 
-          this.setSession(response);
-        })
-      );
-  }
-
-  // =========================
-  // REGISTER
-  // =========================
-
-  register(formData: FormData): Observable<RegisterResponse> {
-    return this.http.post<RegisterResponse>(
-      `${this.apiUrl}/register`,
-      formData
-    );
-  }
-
-  // =========================
-  // PROFILE
-  // =========================
-
-  getProfile(): Observable<AuthUser> {
-    return this.http.get<AuthUser>(
-      `${this.apiUrl}/profile`
-    );
-  }
-
-  // =========================
-  // TOKEN
-  // =========================
-
-  getToken(): string | null {
-    if (typeof localStorage === 'undefined') {
-      return null;
+        return localStorage.getItem(
+            TOKEN_KEY
+        );
     }
 
-    return localStorage.getItem(TOKEN_KEY);
-  }
 
-  // =========================
-  // USER
-  // =========================
+    // =========================
+    // USER
+    // =========================
 
-  getUser(): AuthUser | null {
-    if (typeof localStorage === 'undefined') {
-      return null;
+    getUser(): AuthUser | null {
+
+        if (
+            typeof window === 'undefined'
+        ) {
+            return null;
+        }
+
+        const raw =
+            localStorage.getItem(USER_KEY);
+
+        if (!raw) {
+            return null;
+        }
+
+        try {
+
+            return JSON.parse(
+                raw
+            ) as AuthUser;
+
+        } catch {
+
+            return null;
+
+        }
     }
 
-    const raw = localStorage.getItem(USER_KEY);
 
-    if (!raw) {
-      return null;
+    // =========================
+    // ROLE
+    // =========================
+
+    getRole(): string | null {
+
+        return this.getUser()?.role ?? null;
+
     }
 
-    try {
-      return JSON.parse(raw) as AuthUser;
-    } catch {
-      return null;
-    }
-  }
 
-  // =========================
-  // ROLE
-  // =========================
+    // =========================
+    // AUTH CHECK
+    // =========================
 
-  getRole(): string | null {
-    return this.getUser()?.role ?? null;
-  }
+    isAuthenticated(): boolean {
 
-  // =========================
-  // AUTH CHECK
-  // =========================
+        const token =
+            this.getToken();
 
-  isAuthenticated(): boolean {
-    const token = this.getToken();
+        if (!token) {
+            return false;
+        }
 
-    if (!token) {
-      return false;
+        const expiresAt =
+            this.getTokenExpiry(token);
+
+        if (expiresAt === null) {
+            return true;
+        }
+
+        return expiresAt > Date.now();
     }
 
-    const expiresAt = this.getTokenExpiry(token);
 
-    return expiresAt === null || expiresAt > Date.now();
-  }
+    // =========================
+    // JWT EXPIRATION
+    // =========================
 
-  // =========================
-  // JWT EXPIRATION
-  // =========================
+    private getTokenExpiry(
+        token: string
+    ): number | null {
 
-  private getTokenExpiry(token: string): number | null {
-    try {
-      const parts = token.split('.');
+        try {
 
-      if (parts.length !== 3) {
-        return null;
-      }
+            const parts =
+                token.split('.');
 
-      const payload = JSON.parse(
-        atob(
-          parts[1]
-            .replace(/-/g, '+')
-            .replace(/_/g, '/')
-        )
-      ) as { exp?: number };
+            if (parts.length !== 3) {
+                return null;
+            }
 
-      if (typeof payload.exp !== 'number') {
-        return null;
-      }
+            const payload =
+                JSON.parse(
+                    atob(parts[1])
+                ) as {
+                    exp?: number;
+                };
 
-      return payload.exp * 1000;
+            if (
+                typeof payload.exp !== 'number'
+            ) {
+                return null;
+            }
 
-    } catch {
-      return null;
-    }
-  }
+            return payload.exp * 1000;
 
-  // =========================
-  // SAVE SESSION
-  // =========================
+        } catch {
 
-  setSession(response: AuthResponse): void {
+            return null;
 
-    if (!response?.access_token) {
-      console.error(
-        'Login response does not contain access_token',
-        response
-      );
-
-      return;
+        }
     }
 
-    localStorage.setItem(
-      TOKEN_KEY,
-      response.access_token
-    );
 
-    localStorage.setItem(
-      USER_KEY,
-      JSON.stringify(response.user)
-    );
-  }
+    // =========================
+    // SAVE SESSION
+    // =========================
 
-  // =========================
-  // CLEAR SESSION
-  // =========================
+    setSession(
+        response: AuthResponse
+    ): void {
 
-  clearSession(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-  }
+        if (
+            typeof window === 'undefined'
+        ) {
+            return;
+        }
 
-  // =========================
-  // LOGOUT
-  // =========================
+        localStorage.setItem(
+            TOKEN_KEY,
+            response.access_token
+        );
 
-  logout(): void {
-    this.clearSession();
+        localStorage.setItem(
+            USER_KEY,
+            JSON.stringify(
+                response.user
+            )
+        );
+    }
 
-    this.router.navigate(['/login']);
-  }
+
+    // =========================
+    // CLEAR SESSION
+    // =========================
+
+    clearSession(): void {
+
+        if (
+            typeof window === 'undefined'
+        ) {
+            return;
+        }
+
+        localStorage.removeItem(
+            TOKEN_KEY
+        );
+
+        localStorage.removeItem(
+            USER_KEY
+        );
+    }
+
+
+    // =========================
+    // LOGOUT
+    // =========================
+
+    logout(): void {
+
+        this.clearSession();
+
+        this.router.navigate([
+            '/login',
+        ]);
+    }
 }

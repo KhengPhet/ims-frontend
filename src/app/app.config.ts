@@ -17,11 +17,19 @@ import {
   withEventReplay,
 } from '@angular/platform-browser';
 
-import { routes } from './app.routes';
-import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
+import {
+  routes,
+} from './app.routes';
+
+import {
+  jwtInterceptor,
+} from './core/interceptors/jwt.interceptor';
+
 
 export const appConfig: ApplicationConfig = {
+
   providers: [
+
     provideBrowserGlobalErrorListeners(),
 
     provideRouter(routes),
@@ -35,5 +43,7 @@ export const appConfig: ApplicationConfig = {
         jwtInterceptor,
       ])
     ),
+
   ],
+
 };
