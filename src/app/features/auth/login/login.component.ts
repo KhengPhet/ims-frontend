@@ -83,31 +83,48 @@ export class LoginComponent {
     }
 
     onSubmit(): void {
+        // Prevent double submit
         if (this.isSaving) {
             return;
         }
+        // Validate form
         if (this.form.invalid) {
             this.form.markAllAsTouched();
             return;
         }
         this.isSaving = true;
-        const { email, password } = this.form.getRawValue();
-        console.log('LOGIN REQUEST:', {
+        this.serverError = '';
+        const {
             email,
             password
+        } = this.form.getRawValue();
+        console.log('LOGIN REQUEST:', {
+            email
         });
-        this.authService.login(email, password).subscribe({
-            next: (response) => {
-                console.log('LOGIN SUCCESS:', response);
-                this.isSaving = false;
-                this.router.navigate(['/dashboard']);
-            },
-            error: (error) => {
-                console.error('LOGIN ERROR:', error);
-                this.isSaving = false;
-                this.serverError = error?.error?.message || 'Login failed';
-            }
-        });
+        this.authService
+            .login(email, password)
+            .subscribe({
+                next: (response) => {
+                    console.log(
+                        'LOGIN SUCCESS:',
+                        response
+                    );
+                    this.isSaving = false;
+                    this.router.navigateByUrl(
+                        '/dashboard'
+                    );
+                },
+                error: (error) => {
+                    console.error(
+                        'LOGIN ERROR:',
+                        error
+                    );
+                    this.isSaving = false;
+                    this.serverError =
+                        error?.error?.message ??
+                        'Invalid email or password.';
+                }
+            });
     }
 
     private extractErrorMessage(error: unknown, fallback: string): string {
