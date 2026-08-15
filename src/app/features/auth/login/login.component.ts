@@ -86,35 +86,27 @@ export class LoginComponent {
         if (this.isSaving) {
             return;
         }
-
         if (this.form.invalid) {
             this.form.markAllAsTouched();
             return;
         }
-
         this.isSaving = true;
-        this.serverError = '';
-
         const { email, password } = this.form.getRawValue();
-
+        console.log('LOGIN REQUEST:', {
+            email,
+            password
+        });
         this.authService.login(email, password).subscribe({
             next: (response) => {
                 console.log('LOGIN SUCCESS:', response);
-
                 this.isSaving = false;
-
                 this.router.navigate(['/dashboard']);
             },
-
             error: (error) => {
                 console.error('LOGIN ERROR:', error);
-
                 this.isSaving = false;
-
-                this.serverError =
-                    error?.error?.message ||
-                    'Invalid email or password';
-            },
+                this.serverError = error?.error?.message || 'Login failed';
+            }
         });
     }
 
