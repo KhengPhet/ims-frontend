@@ -83,26 +83,37 @@ export class LoginComponent {
     }
 
     onSubmit(): void {
+        if (this.isSaving) {
+            return;
+        }
+
         if (this.form.invalid) {
             this.form.markAllAsTouched();
             return;
         }
-        if (this.isSaving) {
-            return;
-        }
+
         this.isSaving = true;
+        this.serverError = '';
 
-        const v = this.form.getRawValue();
-        this.serverError = "";
+        const { email, password } = this.form.getRawValue();
 
-        this.authService.login(v.email, v.password).subscribe({
-            next: () => {
+        this.authService.login(email, password).subscribe({
+            next: (response) => {
+                console.log('LOGIN SUCCESS:', response);
+
                 this.isSaving = false;
-                this.router.navigate(["/dashboard"]);
+
+                this.router.navigate(['/dashboard']);
             },
+
             error: (error) => {
+                console.error('LOGIN ERROR:', error);
+
                 this.isSaving = false;
-                this.serverError = this.extractErrorMessage(error, "Login failed. Please check your credentials.");
+
+                this.serverError =
+                    error?.error?.message ||
+                    'Invalid email or password';
             },
         });
     }
