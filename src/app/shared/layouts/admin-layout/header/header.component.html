@@ -1,7 +1,15 @@
 <header class="h-16 bg-white shadow flex items-center justify-between px-4 sm:px-6 gap-4">
 
     <!-- Left -->
-    <div class="flex items-center gap-4 min-w-0">
+    <div class="flex items-center gap-2 sm:gap-4 min-w-0">
+        <button
+            type="button"
+            (click)="layout.toggleSidebar()"
+            aria-label="Open sidebar"
+            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 lg:hidden"
+        >
+            <lucide-icon [img]="icons.menu" size="20"></lucide-icon>
+        </button>
         <h1 class="text-lg sm:text-xl font-bold text-gray-800 truncate">
             Inventory Management System
         </h1>

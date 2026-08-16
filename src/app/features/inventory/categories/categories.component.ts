@@ -90,6 +90,7 @@ export class CategoriesComponent {
 
     modalOpen = false;
     editingCategory: Category | null = null;
+    deleteTarget: Category | null = null;
 
     get modalTitle(): string {
         return this.editingCategory ? "Edit Category" : "Add Category";
@@ -159,6 +160,22 @@ export class CategoriesComponent {
     }
 
     deleteCategory(category: Category): void {
-        this.categories = this.categories.filter((c) => c.id !== category.id);
+        this.deleteTarget = category;
+    }
+
+    closeDelete(): void {
+        this.deleteTarget = null;
+    }
+
+    confirmDelete(): void {
+        if (!this.deleteTarget) {
+            return;
+        }
+
+        this.categories = this.categories.filter(
+            (category) => category.id !== this.deleteTarget!.id
+        );
+
+        this.closeDelete();
     }
 }

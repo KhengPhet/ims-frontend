@@ -1,12 +1,13 @@
 import { Component, inject, signal } from "@angular/core";
 import { afterNextRender } from "@angular/core";
 import { Router } from "@angular/router";
-import { LucideAngularModule, Search, UserRound, Settings, LogOut, CircleQuestionMark } from "lucide-angular";
+import { LucideAngularModule, Menu, Search, UserRound, Settings, LogOut, CircleQuestionMark } from "lucide-angular";
 import { DropdownComponent, DropdownItem } from "../../../components/dropdown/dropdown.component";
 import { NotificationsComponent } from "../../../components/notifications/notifications.component";
 import { AuthService } from "../../../../features/auth/auth.service";
 import { User } from "../../../../core/models/user.model";
 import { resolveImageUrl } from "../../../../core/utils/image-url.util";
+import { LayoutService } from "../layout.service";
 
 @Component({
     selector: "app-header",
@@ -17,8 +18,9 @@ import { resolveImageUrl } from "../../../../core/utils/image-url.util";
 export class HeaderComponent {
     private readonly router = inject(Router);
     private readonly authService = inject(AuthService);
+    protected readonly layout = inject(LayoutService);
 
-    icons = { search: Search };
+    icons = { search: Search, menu: Menu };
 
     readonly user = signal<User | null>(null);
 

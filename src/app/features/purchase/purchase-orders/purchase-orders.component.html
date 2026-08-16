@@ -6,7 +6,7 @@
             <h1 class="text-2xl font-bold text-gray-800">Purchase Orders</h1>
             <p class="text-sm text-gray-500 mt-1">Create and track purchase orders placed with suppliers.</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <app-button variant="secondary" [icon]="icons.download">Export</app-button>
             <app-button [icon]="icons.plus" (clicked)="createPO()">Create Purchase Order</app-button>
         </div>
