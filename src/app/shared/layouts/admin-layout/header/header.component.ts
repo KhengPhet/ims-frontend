@@ -1,9 +1,11 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, signal } from "@angular/core";
+import { afterNextRender } from "@angular/core";
 import { Router } from "@angular/router";
 import { LucideAngularModule, Search, UserRound, Settings, LogOut, CircleQuestionMark } from "lucide-angular";
 import { DropdownComponent, DropdownItem } from "../../../components/dropdown/dropdown.component";
 import { NotificationsComponent } from "../../../components/notifications/notifications.component";
 import { AuthService } from "../../../../features/auth/auth.service";
+import { User } from "../../../../core/models/user.model";
 
 @Component({
     selector: "app-header",
@@ -17,19 +19,25 @@ export class HeaderComponent {
 
     icons = { search: Search };
 
-    user = this.authService.getUser();
+    readonly user = signal<User | null>(null);
+
+    constructor() {
+        afterNextRender(() => {
+            this.user.set(this.authService.getUser());
+        });
+    }
 
     get displayName(): string {
-        return this.user?.username ?? "User";
+        return this.user()?.username ?? "User";
     }
 
     get roleLabel(): string {
-        const role = this.user?.role ?? "user";
+        const role = this.user()?.role ?? "user";
         return role.charAt(0).toUpperCase() + role.slice(1);
     }
 
     get avatar(): string {
-        return this.user?.image ?? "https://i.pravatar.cc/100";
+        return this.user()?.image ?? "https://i.pravatar.cc/100";
     }
 
     menuItems: DropdownItem[] = [

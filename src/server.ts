@@ -10,7 +10,15 @@ import { join } from 'node:path';
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
-const angularApp = new AngularNodeAppEngine();
+const angularApp = new AngularNodeAppEngine({
+  // Allow any Host header. Without this, SSR rejects the request and
+  // silently falls back to a blank client-side render (localhost AND
+  // every deployed hostname were blocked by the previous empty list).
+  allowedHosts: ['*'],
+  // Behind reverse proxies (Railway, Vercel, nginx...) the request
+  // carries X-Forwarded-* headers. Trust them so SSR is NOT disabled.
+  trustProxyHeaders: true,
+});
 
 /**
  * Example Express Rest API endpoints can be defined here.
