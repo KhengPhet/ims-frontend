@@ -18,6 +18,7 @@ import {
 } from "lucide-angular";
 import { ButtonComponent } from "../../shared/components/button/button.component";
 import { MyProfile, ProfileService } from "./profile.service";
+import { resolveImageUrl } from "../../core/utils/image-url.util";
 
 @Component({
     selector: "app-my-profile",
@@ -83,6 +84,10 @@ export class MyProfileComponent {
             .slice(0, 2)
             .join("")
             .toUpperCase();
+    }
+
+    imageSrc(value: string | null | undefined): string {
+        return resolveImageUrl(value);
     }
 
     isInvalid(controlName: string): boolean {

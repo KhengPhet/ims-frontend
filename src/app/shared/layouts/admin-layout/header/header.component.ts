@@ -6,6 +6,7 @@ import { DropdownComponent, DropdownItem } from "../../../components/dropdown/dr
 import { NotificationsComponent } from "../../../components/notifications/notifications.component";
 import { AuthService } from "../../../../features/auth/auth.service";
 import { User } from "../../../../core/models/user.model";
+import { resolveImageUrl } from "../../../../core/utils/image-url.util";
 
 @Component({
     selector: "app-header",
@@ -37,7 +38,7 @@ export class HeaderComponent {
     }
 
     get avatar(): string {
-        return this.user()?.image ?? "https://i.pravatar.cc/100";
+        return resolveImageUrl(this.user()?.image, "https://i.pravatar.cc/100");
     }
 
     menuItems: DropdownItem[] = [
