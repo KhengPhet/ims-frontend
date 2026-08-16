@@ -407,6 +407,27 @@ export class RegisterComponent
 
 
         // ==========================
+        // DEBUG: Angular sends file
+        // ==========================
+
+        console.log(
+            '[A] Angular building FormData:',
+            {
+                username,
+                email,
+                file: this.selectedFile
+                    ? {
+                        name: this.selectedFile.name,
+                        size: this.selectedFile.size,
+                        type: this.selectedFile.type,
+                    }
+                    : null,
+                keys: [...formData.keys()],
+            }
+        );
+
+
+        // ==========================
         // API
         // ==========================
 

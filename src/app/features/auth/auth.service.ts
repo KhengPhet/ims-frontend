@@ -28,6 +28,13 @@ export class AuthService {
   }
 
   register(formData: FormData): Observable<RegisterResponse> {
+    const file = formData.get('image');
+    console.log(
+      '[A] Angular POST /auth/register (FormData)',
+      file instanceof File
+        ? `file=${file.name} size=${file.size} type=${file.type}`
+        : 'no image file',
+    );
     return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, formData);
   }
 

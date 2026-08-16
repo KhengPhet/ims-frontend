@@ -4,6 +4,7 @@ export interface User {
   email: string;
   image?: string | null;
   role: string;
+  created_at?: string;
 }
 
 export interface LoginResponse {
