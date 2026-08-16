@@ -14,6 +14,7 @@ import {
 } from '@angular/forms';
 
 import {
+  ActivatedRoute,
   Router,
   RouterLink,
 } from '@angular/router';
@@ -63,6 +64,9 @@ export class LoginComponent {
 
   private readonly router =
     inject(Router);
+
+  private readonly route =
+    inject(ActivatedRoute);
 
 
   // ==========================
@@ -177,6 +181,7 @@ export class LoginComponent {
     const {
       email,
       password,
+      rememberMe,
     } =
       this.form.getRawValue();
 
@@ -184,17 +189,12 @@ export class LoginComponent {
     this.authService
       .login(
         email.trim(),
-        password
+        password,
+        rememberMe
       )
       .subscribe({
 
-        next: (response) => {
-
-          console.log(
-            'LOGIN SUCCESS:',
-            response
-          );
-
+        next: () => {
 
           this.isSaving = false;
 
@@ -203,9 +203,9 @@ export class LoginComponent {
           // token + user
 
 
-          this.router.navigate([
-            '/dashboard',
-          ]);
+          this.router.navigateByUrl(
+            this.resolveReturnUrl()
+          );
 
         },
 
@@ -221,49 +221,112 @@ export class LoginComponent {
           this.isSaving = false;
 
 
-          if (
-            error?.status === 0
-          ) {
-
-            this.serverError =
-              'Cannot connect to server. Please check the API URL or CORS.';
-
-            return;
-
-          }
-
-
-          if (
-            error?.status === 401
-          ) {
-
-            this.serverError =
-              'Invalid email or password.';
-
-            return;
-
-          }
-
-
-          if (
-            error?.status >= 500
-          ) {
-
-            this.serverError =
-              'Server error. Please try again.';
-
-            return;
-
-          }
-
-
           this.serverError =
-            error?.error?.message ??
-            'Invalid email or password.';
+            this.getServerError(error);
 
         },
 
       });
+
+  }
+
+
+  // ==========================
+  // RETURN URL
+  // ==========================
+
+  private resolveReturnUrl(): string {
+
+    const returnUrl =
+      this.route.snapshot
+        .queryParamMap
+        .get('returnUrl');
+
+
+    if (
+      returnUrl &&
+      returnUrl.startsWith('/') &&
+      !returnUrl.startsWith('//')
+    ) {
+
+      return returnUrl;
+
+    }
+
+
+    return '/dashboard';
+
+  }
+
+
+  // ==========================
+  // SERVER ERROR
+  // ==========================
+
+  private getServerError(
+    error: any
+  ): string {
+
+    if (
+      error?.status === 0
+    ) {
+
+      return 'Cannot connect to server. Please check the API URL or CORS.';
+
+    }
+
+
+    const message =
+      error?.error?.message;
+
+
+    if (
+      Array.isArray(message)
+    ) {
+
+      return message.join(', ');
+
+    }
+
+
+    if (
+      typeof message === 'string' &&
+      message.trim()
+    ) {
+
+      return message;
+
+    }
+
+
+    if (
+      error?.status === 401
+    ) {
+
+      return 'Invalid email or password.';
+
+    }
+
+
+    if (
+      error?.status === 400
+    ) {
+
+      return 'Invalid request. Please check your input.';
+
+    }
+
+
+    if (
+      error?.status >= 500
+    ) {
+
+      return 'Server error. Please try again.';
+
+    }
+
+
+    return 'Something went wrong. Please try again.';
 
   }
 
